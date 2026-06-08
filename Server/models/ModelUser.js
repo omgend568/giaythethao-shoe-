@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
+const { sequelize } = require('../Config/db');
 
 const User = sequelize.define(
     'User',
@@ -20,7 +20,11 @@ const User = sequelize.define(
         },
         password: {
             type: DataTypes.STRING(255),
-            allowNull: false,
+            allowNull: true,
+        },
+        googleId: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
         },
         isAdmin: {
             type: DataTypes.BOOLEAN,
@@ -32,7 +36,7 @@ const User = sequelize.define(
         },
         address: {
             type: DataTypes.STRING(255),
-            allowNull: true,
+            allowNull: true, // Cho phép null nếu user chưa cập nhật profile
         },
         createdAt: {
             type: DataTypes.DATE,

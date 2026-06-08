@@ -1,7 +1,9 @@
 import classNames from 'classnames/bind';
 import styles from '../Styles/Login.module.scss';
 import request from '../Config/api';
+import { GOOGLE_CLIENT_ID } from '../Config/googleAuth';
 
+import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
@@ -12,6 +14,23 @@ function LoginUser() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+
+    const redirectAfterLogin = async () => {
+        try {
+            const userRes = await request.get('/api/auth');
+            const user = userRes.data;
+            if (user?.isAdmin) {
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
+            window.location.reload();
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+            navigate('/');
+            window.location.reload();
+        }
+    };
 
     const handleLoginUser = async () => {
         try {
@@ -33,25 +52,44 @@ function LoginUser() {
 
             toast.success(res.data.message || 'Đăng nhập thành công!');
 
-            setTimeout(async () => {
-                try {
-                    const userRes = await request.get('/api/auth');
-                    if (userRes && userRes.isAdmin) {
-                        navigate('/admin');
-                    } else {
-                        navigate('/');
-                    }
-                    window.location.reload();
-                } catch (error) {
-                    console.error('Error fetching user info:', error);
-                    navigate('/');
-                    window.location.reload();
-                }
+            setTimeout(() => {
+                redirectAfterLogin();
             }, 1000);
         } catch (error) {
             const message = error?.response?.data?.message || 'Tài khoản hoặc mật khẩu không chính xác!';
             toast.error(message);
         }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            if (!credentialResponse?.credential) {
+                toast.error('Không nhận được token từ Google');
+                return;
+            }
+
+            const res = await request.post('/api/auth/google', {
+                credential: credentialResponse.credential,
+            });
+
+            toast.success(res.data.message || 'Đăng nhập Google thành công!');
+
+            setTimeout(() => {
+                redirectAfterLogin();
+            }, 500);
+        } catch (error) {
+            console.error('Google API error:', error?.response?.data || error.message);
+            let message = error?.response?.data?.message;
+            if (!message && error.code === 'ERR_NETWORK') {
+                message = 'Không kết nối được Server. Kiểm tra npm start trong folder Server (port 5001).';
+            }
+            toast.error(message || 'Server từ chối đăng nhập Google. Xem terminal Server để biết chi tiết.');
+        }
+    };
+
+    const handleGoogleError = () => {
+        console.error('Google popup onError — popup bị đóng, chặn cookie, hoặc cấu hình OAuth chưa đúng.');
+        toast.error('Popup Google lỗi. Kiểm tra origins http://localhost:3000 trên Google Cloud.');
     };
 
     return (
@@ -85,6 +123,24 @@ function LoginUser() {
                             <button className={cx('btn-login')} onClick={handleLoginUser}>
                                 Đăng nhập
                             </button>
+
+                            <p className={cx('divider')}>hoặc</p>
+
+                            <div className={cx('google-login-wrap')}>
+                                {GOOGLE_CLIENT_ID ? (
+                                    <GoogleLogin
+                                        type="icon"
+                                        shape="circle"
+                                        theme="filled_black"
+                                        size="large"
+                                        onSuccess={handleGoogleSuccess}
+                                        onError={handleGoogleError}
+                                    />
+                                ) : (
+                                    <p style={{ color: 'red', fontSize: 14 }}>
+                                    </p>
+                                )}
+                            </div>
 
                             <div className={cx('single-input-fields')}>
                                 <div>

@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 require('dotenv').config();
 
 const sequelize = new Sequelize(
@@ -13,14 +13,41 @@ const sequelize = new Sequelize(
     }
 );
 
+async function ensureGoogleLoginColumns() {
+    const queryInterface = sequelize.getQueryInterface();
+    let table;
+
+    try {
+        table = await queryInterface.describeTable('users');
+    } catch {
+        return;
+    }
+
+    if (!table.googleId) {
+        await queryInterface.addColumn('users', 'googleId', {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        });
+        console.log('Đã thêm cột users.googleId');
+    }
+}
+
 const connectDB = async () => {
     try {
         await sequelize.authenticate();
-        console.log('MySQL connected successfully');
-        await sequelize.sync({ alter: false, force: false });
-        console.log('Database models synchronized');
+        console.log('MySQL kết nối thành công');
+
+        const syncAlter = process.env.DB_SYNC_ALTER === 'true';
+        await sequelize.sync({ alter: syncAlter, force: false });
+        await ensureGoogleLoginColumns();
+
+        const { seedBrandsData } = require('../controllers/ControllerCategory');
+        await seedBrandsData();
+        
+
+        console.log('Tất cả các mô hình đã được đồng bộ hóa với cơ sở dữ liệu');
     } catch (error) {
-        console.error('Unable to connect to MySQL:', error);
+        console.error('Không thể kết nối đến MySQL:', error);
         process.exit(1);
     }
 };

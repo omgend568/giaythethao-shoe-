@@ -23,6 +23,31 @@ export const requestLogout = async () => {
     return res.data;
 };
 
+export const requestGetCart = async () => {
+    const res = await request.get('/api/cart');
+    return res.data;
+};
+
+export const requestAdmin = async () => {
+    const res = await request.get('/api/admin');
+    return res.data;
+};
+
+export const requestChat = async (question) => {
+    const res = await request.post('/chat', { question });
+    return res.data;
+};
+
+export const requestUpdateInfoCart = async (data) => {
+    const res = await request.post('/api/update-info-cart', data);
+    return res.data;
+};
+
+export const requestPaymentVNPAY = async (data) => {
+    const res = await request.post('/api/paymentvnpay', data);
+    return res.data;
+};
+
 let isRefreshing = false;
 let failedRequestsQueue = [];
 
@@ -67,7 +92,7 @@ request.interceptors.response.use(
         }
 
         return Promise.reject(error);
-    }
+    },
 );
 
 export default request;
