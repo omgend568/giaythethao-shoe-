@@ -1,9 +1,11 @@
 const UserRoute = require('./RoutesUser');
 const CategoryRoute = require('./RoutesCategory');
+const ProductsRoute = require('./RoutesProducts');
 const modelUser = require('../models/ModelUser');
 const { jwtDecode } = require('jwt-decode');
 
 function route(app) {
+    app.use('/api', ProductsRoute);
     app.use('/api', UserRoute);
     app.use('/api', CategoryRoute);
 

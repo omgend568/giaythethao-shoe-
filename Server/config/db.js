@@ -1,8 +1,12 @@
+const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
-require('dotenv').config();
+
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+
+const dbName = process.env.DB_NAME || 'shoe_database';
 
 const sequelize = new Sequelize(
-    process.env.DB_NAME || 'giay_database',
+    dbName,
     process.env.DB_USER || 'root',
     process.env.DB_PASSWORD || '',
     {
@@ -12,6 +16,20 @@ const sequelize = new Sequelize(
         logging: false,
     }
 );
+
+async function ensureDatabase() {
+    const temp = new Sequelize('', process.env.DB_USER || 'root', process.env.DB_PASSWORD || '', {
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 3306,
+        dialect: 'mysql',
+        logging: false,
+    });
+
+    await temp.query(
+        `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+    );
+    await temp.close();
+}
 
 async function ensureGoogleLoginColumns() {
     const queryInterface = sequelize.getQueryInterface();
@@ -34,13 +52,13 @@ async function ensureGoogleLoginColumns() {
 
 const connectDB = async () => {
     try {
+        await ensureDatabase();
         await sequelize.authenticate();
-        console.log('MySQL kết nối thành công');
+        console.log(`MySQL kết nối thành công → database: ${dbName}`);
 
         const syncAlter = process.env.DB_SYNC_ALTER === 'true';
         await sequelize.sync({ alter: syncAlter, force: false });
         await ensureGoogleLoginColumns();
-
         const { seedBrandsData } = require('../controllers/ControllerCategory');
         await seedBrandsData();
         

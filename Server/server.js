@@ -1,9 +1,11 @@
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
 const route = require('./routes');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const { connectDB } = require('./Config/db');
+const { connectDB } = require('./config/db');
 const path = require('path');
 const bodyParser = require('body-parser');
 const http = require('http');
@@ -11,7 +13,6 @@ const { Server } = require('socket.io');
 const { askQuestion } = require('./utils/chatbot');
 
 require('./models/associations');
-require('dotenv').config();
 
 const port = process.env.PORT || 5001;
 const clientUrl = process.env.CLIENT_URL || process.env.REACT_APP_URL || 'http://localhost:3000';

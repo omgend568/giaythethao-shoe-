@@ -1,41 +1,42 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
-const OrderItem = sequelize.define(
-    'OrderItem',
+const PromotionUsage = sequelize.define(
+    'PromotionUsage',
     {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
+        promotionId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: { model: 'promotions', key: 'id' },
+        },
+        userId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: { model: 'users', key: 'id' },
+        },
         orderId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: { model: 'orders', key: 'id' },
         },
-        productVariantId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: { model: 'product_variants', key: 'id' },
-        },
-        quantity: {
-            type: DataTypes.INTEGER,
-            defaultValue: 1,
-        },
-        price: {
-            type: DataTypes.DECIMAL(10,2),
-            defaultValue: 0.0,
-        },
         discount_amount: {
             type: DataTypes.DECIMAL(10, 2),
-            defaultValue: 0.0,
+            allowNull: false,
+        },
+        usedAt: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
         },
     },
     {
-        tableName: 'order_items',
+        tableName: 'promotion_usages',
         timestamps: false,
     }
 );
 
-module.exports = OrderItem;
+module.exports = PromotionUsage;

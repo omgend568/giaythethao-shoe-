@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../Config/db');
+const { sequelize } = require('../config/db');
 
 const Order = sequelize.define(
     'Order',
@@ -17,6 +17,19 @@ const Order = sequelize.define(
         address: {
             type: DataTypes.STRING(255),
             allowNull: false,
+        },
+        promotionId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: { model: 'promotions', key: 'id' },
+        },
+        subtotal: {
+            type: DataTypes.DECIMAL(10, 2),
+            defaultValue: 0.0,
+        },
+        discount_amount: {
+            type: DataTypes.DECIMAL(10, 2),
+            defaultValue: 0.0,
         },
         total_price: {
             type: DataTypes.DECIMAL(10,2),

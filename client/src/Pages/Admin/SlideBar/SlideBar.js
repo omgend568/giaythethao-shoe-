@@ -1,7 +1,7 @@
 import classNames from 'classnames/bind';
 import styles from './Slidebar.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faList, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { faBagShopping, faList, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import request from '../../../Config/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,6 +23,10 @@ function SlideBar({ setCheckTypeSlideBar, checkTypeSlideBar }) {
             <h4>Quản Trị Admin</h4>
             <ul>
                 <li onClick={() => setCheckTypeSlideBar(1)} id={cx(checkTypeSlideBar === 1 ? 'active' : '')}>
+                    <FontAwesomeIcon icon={faBagShopping} />
+                    Quản Lý Sản Phẩm
+                </li>
+                <li onClick={() => setCheckTypeSlideBar(2)} id={cx(checkTypeSlideBar === 2 ? 'active' : '')}>
                     <FontAwesomeIcon icon={faList} />
                     Quản Lý Danh Mục
                 </li>

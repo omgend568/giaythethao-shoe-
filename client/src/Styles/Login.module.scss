@@ -113,9 +113,50 @@
 }
 
 .google-login-wrap {
+    position: relative;
     display: flex;
     justify-content: center;
     margin-bottom: 8px;
+    width: 100%;
+}
+
+.google-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid #dadce0;
+    border-radius: 0;
+    background: #fff;
+    color: #3c4043;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'Roboto', Arial, sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+
+    &:hover {
+        background: #f8f9fa;
+        box-shadow: 0 1px 3px rgba(60, 64, 67, 0.15);
+    }
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.google-login-hidden {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
 }
 
 @media only screen and (max-width: 600px) {

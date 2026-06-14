@@ -12,6 +12,9 @@ const OrderItem = require('./ModelOrderItem');
 const ProductVariant = require('./ModelProductVariant');
 const Review = require('./ModelReview');
 const ReviewImage = require('./ModelReviewImage');
+const Promotion = require('./ModelPromotion');
+const PromotionProduct = require('./ModelPromotionProduct');
+const PromotionUsage = require('./ModelPromotionUsage');
 
 // User - Cart (1:1)
 User.hasOne(Cart, { foreignKey: 'userId', onDelete: 'CASCADE' });
@@ -76,6 +79,30 @@ CartItem.belongsTo(ProductVariant, { foreignKey: 'productVariantId' });
 ProductVariant.hasMany(OrderItem, { foreignKey: 'productVariantId' });
 OrderItem.belongsTo(ProductVariant, { foreignKey: 'productVariantId' });
 
+// Promotions
+Promotion.belongsToMany(Product, {
+    through: PromotionProduct,
+    foreignKey: 'promotionId',
+    otherKey: 'productId',
+});
+Product.belongsToMany(Promotion, {
+    through: PromotionProduct,
+    foreignKey: 'productId',
+    otherKey: 'promotionId',
+});
+
+Promotion.hasMany(Order, { foreignKey: 'promotionId', onDelete: 'SET NULL' });
+Order.belongsTo(Promotion, { foreignKey: 'promotionId' });
+
+Promotion.hasMany(PromotionUsage, { foreignKey: 'promotionId', onDelete: 'CASCADE' });
+PromotionUsage.belongsTo(Promotion, { foreignKey: 'promotionId' });
+
+User.hasMany(PromotionUsage, { foreignKey: 'userId', onDelete: 'CASCADE' });
+PromotionUsage.belongsTo(User, { foreignKey: 'userId' });
+
+Order.hasOne(PromotionUsage, { foreignKey: 'orderId', onDelete: 'CASCADE' });
+PromotionUsage.belongsTo(Order, { foreignKey: 'orderId' });
+
 module.exports = {
 	User,
 	Cart,
@@ -91,4 +118,7 @@ module.exports = {
 	Payment,
 	Review,
 	ReviewImage,
+	Promotion,
+	PromotionProduct,
+	PromotionUsage,
 };
