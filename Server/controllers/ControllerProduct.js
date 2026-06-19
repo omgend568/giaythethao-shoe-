@@ -145,6 +145,10 @@ class ControllerProduct {
                         [Op.like]: `%${nameProduct}%`,
                     },
                 },
+                include: [
+                    { model: ProductImage, attributes: ['id', 'url'] },
+                    { model: ProductVariant, attributes: ['id', 'price'] },
+                ],
             });
 
             return res.status(200).json(dataProducts);
@@ -287,6 +291,11 @@ class ControllerProduct {
                         [Op.like]: `%${nameProduct}%`,
                     },
                 },
+                include: [
+                    { model: ProductImage, attributes: ['id', 'url'] },
+                    { model: Brand, attributes: ['id', 'name'] },
+                    { model: ProductVariant },
+                ],
             });
 
             return res.status(200).json(dataProducts);

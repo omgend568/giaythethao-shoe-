@@ -20,11 +20,11 @@ const Admin = () => {
                 if (res && res.isAdmin === true) {
                     document.title = 'Quản Trị Admin';
                 } else {
-                    navigate('/');
+                    navigate('/home');
                 }
             } catch (error) {
                 console.error('Admin check error:', error);
-                navigate('/');
+                navigate('/home');
             }
         };
         fetchData();

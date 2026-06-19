@@ -1,6 +1,7 @@
 import classNames from 'classnames/bind';
 import styles from '../Styles/Header.module.scss';
 import request, { requestLogout } from '../Config/api';
+import getUploadUrl from '../utils/getUploadUrl';
 import useDebounce from '../hooks/useDebounce';
 
 import logo from '../assests/imgs/logo.jpg';
@@ -39,14 +40,25 @@ function Header() {
     const debounce = useDebounce(searchValue, 500);
 
     useEffect(() => {
-        try {
-            if (searchValue === '') {
-                return;
-            }
+        if (searchValue === '') {
+            setDataSearch([]);
+            return;
+        }
 
-            request.get('/api/search', { params: { nameProduct: debounce } }).then((res) => setDataSearch(res.data));
-        } catch (error) {}
+        request
+            .get('/api/search', { params: { nameProduct: debounce } })
+            .then((res) => setDataSearch(Array.isArray(res.data) ? res.data : []))
+            .catch(() => setDataSearch([]));
     }, [debounce, searchValue]);
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchValue.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchValue.trim())}`);
+            setSearchValue('');
+            setDataSearch([]);
+        }
+    };
 
     const handleLogOut = async () => {
         try {
@@ -54,7 +66,7 @@ function Header() {
             setTimeout(() => {
                 window.location.reload();
             }, 2000);
-            navigate('/');
+            navigate('/home');
         } catch (error) {
             console.log(error);
         }
@@ -64,7 +76,7 @@ function Header() {
         <div className={cx('wrapper')}>
             <div className={cx('inner')}>
                 <div className={cx('row-left')}>
-                    <Link to={'/'}>
+                    <Link to={'/home'}>
                         <img id={cx('logo')} src={logo} alt="" style={{ width: '120px', height: 'auto' }} />
                     </Link>
                     <ul>
@@ -84,36 +96,71 @@ function Header() {
                 </div>
 
                 <div className={cx('row-right')}>
-                    <div className={cx('search')}>
-                        <input placeholder="Tìm Kiếm Sản Phẩm..." onChange={(e) => setSearchValue(e.target.value)} />
-                        <FontAwesomeIcon icon={faSearch} />
+                    <form className={cx('search')} onSubmit={handleSearchSubmit}>
+                        <input
+                            placeholder="Tìm Kiếm Sản Phẩm..."
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                        />
+                        <button type="submit" className={cx('search-btn')} aria-label="Tìm kiếm">
+                            <FontAwesomeIcon icon={faSearch} />
+                        </button>
                         {searchValue.length > 0 ? (
                             <div className={cx('result')}>
-                                {dataSearch.map((item) => (
-                                    <Link to={`/product/${item.id}/${item.slug}`} key={item.id}>
-                                        <div className={cx('form-result')}>
-                                            <img src={`${process.env.REACT_APP_IMG}/${item?.ProductImages?.[0]?.url}`} alt="" />
-                                            <span>{item.name}</span>
-                                            <span id={cx('price')}>{formatPriceVN(item.price)}</span>
+                                {dataSearch.length > 0 ? (
+                                    dataSearch.map((item) => (
+                                        <Link
+                                            to={`/product/${item.id}/${item.slug}`}
+                                            key={item.id}
+                                            onClick={() => {
+                                                setSearchValue('');
+                                                setDataSearch([]);
+                                            }}
+                                        >
+                                            <div className={cx('form-result')}>
+                                                <img src={getUploadUrl(item?.ProductImages?.[0]?.url)} alt="" />
+                                                <span>{item.name}</span>
+                                                <span id={cx('price')}>
+                                                    {formatPriceVN(
+                                                        item?.ProductVariants?.[0]?.price || item?.price || 0
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    ))
+                                ) : (
+                                    debounce === searchValue && (
+                                        <div className={cx('form-result', 'no-result')}>
+                                            <span>Không tìm thấy sản phẩm</span>
                                         </div>
+                                    )
+                                )}
+                                {dataSearch.length > 0 && (
+                                    <Link
+                                        to={`/search?q=${encodeURIComponent(searchValue.trim())}`}
+                                        className={cx('view-all')}
+                                        onClick={() => {
+                                            setSearchValue('');
+                                            setDataSearch([]);
+                                        }}
+                                    >
+                                        Xem tất cả kết quả
                                     </Link>
-                                ))}
+                                )}
                             </div>
-                        ) : (
-                            <></>
-                        )}
-                    </div>
+                        ) : null}
+                    </form>
 
-                    <div className={cx('cart-icon')}>
-                        {dataUser?.id ? (
+                    {dataUser?.id ? (
+                        <div className={cx('cart-icon')}>
                             <Link to={'/cart'}>
                                 <FontAwesomeIcon id={cx('icon-cart')} icon={faCartPlus} />
                             </Link>
-                        ) : (
-                            <></>
-                        )}
-                        {dataCart?.CartItems?.length > 0 ? <span>{dataCart?.CartItems?.length}</span> : <></>}
-                    </div>
+                            {dataCart?.CartItems?.length > 0 ? (
+                                <span>{dataCart.CartItems.length}</span>
+                            ) : null}
+                        </div>
+                    ) : null}
 
                     <div>
                         {dataUser?.id ? (
@@ -171,7 +218,7 @@ function Header() {
                         <Offcanvas show={show} onHide={handleClose}>
                             <Offcanvas.Header closeButton>
                                 <Offcanvas.Title>
-                                    <Link to={'/'}>
+                                    <Link to={'/home'}>
                                         <img src={logo} alt="" />
                                     </Link>
                                 </Offcanvas.Title>
@@ -179,7 +226,7 @@ function Header() {
                             <Offcanvas.Body>
                                 <div className={cx('row-left-mobile')}>
                                     <ul>
-                                        <Link to={'/'}>
+                                        <Link to={'/home'}>
                                             <li>Trang Chủ</li>
                                         </Link>
                                         <Link to={'/category'}>
@@ -194,17 +241,13 @@ function Header() {
                                         <Link to={'/category/giay-tre-em'}>
                                             <li>Trẻ Em</li>
                                         </Link>
-                                        {dataUser?._id ? (
-                                            <>
-                                                <Link to={'/cart'}>
-                                                    <li>Giỏ Hàng</li>
-                                                </Link>
-                                            </>
-                                        ) : (
-                                            <></>
-                                        )}
+                                        {dataUser?.id ? (
+                                            <Link to={'/cart'} onClick={handleClose}>
+                                                <li>Giỏ Hàng</li>
+                                            </Link>
+                                        ) : null}
 
-                                        <Link to={dataUser?._id ? '/info' : '/login'}>
+                                        <Link to={dataUser?.id ? '/info' : '/login'}>
                                             <li>Thông Tin Người Dùng</li>
                                         </Link>
 
@@ -217,7 +260,7 @@ function Header() {
                                         ) : (
                                             <></>
                                         )}
-                                        {dataUser?._id ? (
+                                        {dataUser?.id ? (
                                             <li onClick={handleLogOut}>
                                                 <a
                                                     style={{ color: 'red', fontWeight: '700' }}

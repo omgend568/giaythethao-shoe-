@@ -22,8 +22,8 @@
     "sass": "^1.77.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation react-scripts start",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation react-scripts build",
     "test": "react-scripts test"
   },
   "browserslist": {
@@ -37,5 +37,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

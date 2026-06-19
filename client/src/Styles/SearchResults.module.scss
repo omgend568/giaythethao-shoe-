@@ -1,0 +1,52 @@
+.wrapper {
+    width: 100%;
+}
+
+.main {
+    width: 80%;
+    margin: 150px auto 80px;
+    min-height: 60vh;
+
+    h2 {
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+}
+
+.keyword {
+    margin-bottom: 24px;
+    color: #555;
+}
+
+.empty {
+    margin-bottom: 24px;
+    color: #888;
+}
+
+.card {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+@media only screen and (max-width: 1024px) {
+    .card {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .main {
+        width: 92%;
+    }
+
+    .card {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .card {
+        grid-template-columns: 1fr;
+    }
+}

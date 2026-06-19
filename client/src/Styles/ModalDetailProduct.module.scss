@@ -104,6 +104,43 @@
         color: #fff;
     }
 }
+
+.login-prompt {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    p {
+        margin: 0;
+        font-weight: 600;
+        color: #555;
+    }
+}
+
+.login-actions {
+    display: flex;
+    gap: 12px;
+
+    a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+        height: 40px;
+        padding: 0 16px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 700;
+        border: 1px solid #cc1e1e;
+        color: #cc1e1e;
+    }
+
+    a:first-child {
+        background-color: #cc1e1e;
+        color: #fff;
+    }
+}
 @media only screen and (max-width: 600px) {
     .modal-body {
         grid-template-columns: 100%;

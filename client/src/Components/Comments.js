@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from '../Styles/Comments.module.scss';
 import request from '../Config/api';
+import getUploadUrl from '../utils/getUploadUrl';
 import { useStore } from '../hooks/useStore';
 import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -148,7 +149,7 @@ function Comments({ productId }) {
                             {comment.ReviewImages && comment.ReviewImages.length > 0 && (
                                 <div className={cx('comment-images')}>
                                     {comment.ReviewImages.map((img) => (
-                                        <img key={img.id} src={`${process.env.REACT_APP_IMG}/${img.url}`} alt="" />
+                                        <img key={img.id} src={getUploadUrl(img.url)} alt="" />
                                     ))}
                                 </div>
                             )}

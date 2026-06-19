@@ -3,10 +3,12 @@ import styles from '../../Styles/ModalDetailProduct.module.scss';
 import Modal from 'react-bootstrap/Modal';
 import addToCartProduct from '../HandleCart/AddToCart';
 import request from '../../Config/api';
+import getUploadUrl from '../getUploadUrl';
 
 import { useState, useEffect } from 'react';
 
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 import { useStore } from '../../hooks/useStore';
 const cx = classNames.bind(styles);
 
@@ -17,6 +19,16 @@ const formatPriceVN = (price) => {
         currency: 'VND',
     }).format(price);
 };
+
+const sortVariantsBySize = (variants) =>
+    [...variants].sort((a, b) => {
+        const sizeA = Number(a.size);
+        const sizeB = Number(b.size);
+        if (!Number.isNaN(sizeA) && !Number.isNaN(sizeB)) {
+            return sizeA - sizeB;
+        }
+        return String(a.size).localeCompare(String(b.size), 'vi', { numeric: true });
+    });
 
 function ModalDetailProduct({ id, show, setShow }) {
     const handleClose = () => setShow(false);
@@ -57,17 +69,19 @@ function ModalDetailProduct({ id, show, setShow }) {
 
     const handleAddToCart = async () => {
         if (!dataUser?.id) {
-            return toast.error('Vui lòng đăng nhập');
+            return toast.error('Vui lòng đăng ký và đăng nhập để mua hàng');
         }
         if (!selectedVariant) {
-            return toast.error('Vui lòng chọn variant');
+            return toast.error('Vui lòng chọn màu và kích cỡ sản phẩm');
         }
         try {
             await addToCartProduct(selectedVariant, quantity);
             await getCart();
             toast.success('Thêm vào giỏ hàng thành công');
         } catch (error) {
-            toast.error('Vui lòng đăng nhập');
+            if (error.message !== 'NOT_LOGGED_IN') {
+                toast.error('Không thể thêm vào giỏ hàng');
+            }
         }
     };
 
@@ -83,7 +97,7 @@ function ModalDetailProduct({ id, show, setShow }) {
                 {dataProduct.map((item) => (
                     <Modal.Body key={item.id} className={cx('modal-body')}>
                         <div className={cx('img')}>
-                            <img src={`${process.env.REACT_APP_IMG}/${item.ProductImages?.[0]?.url}`} alt="" />
+                            <img src={getUploadUrl(item.ProductImages?.[0]?.url)} alt="" />
                         </div>
 
                         <div className={cx('content')}>
@@ -123,9 +137,9 @@ function ModalDetailProduct({ id, show, setShow }) {
                                     <>
                                         <span>Kích cỡ:</span>
                                         <div className={cx('form-size')}>
-                                            {(item.ProductVariants || [])
-                                                .filter((v) => v.color === selectedColor)
-                                                .map((v) => (
+                                            {(sortVariantsBySize(
+                                                (item.ProductVariants || []).filter((v) => v.color === selectedColor)
+                                            )).map((v) => (
                                                     <div
                                                         key={v.size}
                                                         onClick={() => {
@@ -143,20 +157,40 @@ function ModalDetailProduct({ id, show, setShow }) {
                                     </>
                                 )}
                             </div>
-                            <div className={cx('btn-add-to-cart')}>
-                                <div className={cx('form-quantity')}>
-                                    <button onClick={() => setQuantity(quantity - 1)}>-</button>
-                                    <input
-                                        id={cx('quantity')}
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                    />
-                                    <button onClick={() => setQuantity(quantity + 1)}>+</button>
+                            {dataUser?.id ? (
+                                <div className={cx('btn-add-to-cart')}>
+                                    <div className={cx('form-quantity')}>
+                                        <button type="button" onClick={() => setQuantity(quantity - 1)}>
+                                            -
+                                        </button>
+                                        <input
+                                            id={cx('quantity')}
+                                            value={quantity}
+                                            onChange={(e) => setQuantity(e.target.value)}
+                                        />
+                                        <button type="button" onClick={() => setQuantity(quantity + 1)}>
+                                            +
+                                        </button>
+                                    </div>
+                                    <div className={cx('btn-add-cart')}>
+                                        <button type="button" onClick={handleAddToCart}>
+                                            Thêm Vào Giỏ Hàng
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className={cx('btn-add-cart')}>
-                                    <button onClick={handleAddToCart}>Thêm Vào Giỏ Hàng</button>
+                            ) : (
+                                <div className={cx('login-prompt')}>
+                                    <p>Vui lòng đăng ký và đăng nhập để mua hàng</p>
+                                    <div className={cx('login-actions')}>
+                                        <Link to="/login" onClick={handleClose}>
+                                            Đăng nhập
+                                        </Link>
+                                        <Link to="/register" onClick={handleClose}>
+                                            Đăng ký
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </Modal.Body>
                 ))}

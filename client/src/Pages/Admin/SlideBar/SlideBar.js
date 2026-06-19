@@ -15,7 +15,7 @@ function SlideBar({ setCheckTypeSlideBar, checkTypeSlideBar }) {
         setTimeout(() => {
             window.location.reload();
         }, 2000);
-        navigate('/');
+        navigate('/home');
     };
 
     return (

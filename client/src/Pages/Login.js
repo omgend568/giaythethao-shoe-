@@ -22,7 +22,7 @@ function LoginUser() {
     };
 
     const redirectAfterLogin = () => {
-        navigate('/');
+        navigate('/home');
         window.location.reload();
     };
 

@@ -6,6 +6,23 @@ import request from '../../Config/api';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const getUploadUrl = (filename) => {
+    if (!filename) return '';
+
+    const defaultServer = 'http://localhost:5001';
+    const server = (process.env.REACT_APP_SERVER || defaultServer).replace(/\/$/, '');
+
+    const imgBase = process.env.REACT_APP_IMG;
+    if (imgBase) {
+        const base = imgBase.replace(/\/$/, '');
+        if (base.endsWith('/uploads')) return `${base}/${filename}`;
+        if (base.includes('/uploads/')) return `${base}/${filename}`;
+        return `${base}/uploads/${filename}`;
+    }
+
+    return `${server}/uploads/${filename}`;
+};
+
 function ModalUpdatePro({ show, setShow, data }) {
     const [nameProduct, setNameProduct] = useState('');
     const [description, setDescription] = useState('');
@@ -83,7 +100,7 @@ function ModalUpdatePro({ show, setShow, data }) {
         // initialize previews from existing product images
         if (data.ProductImages) {
             setPreviewUrls(
-                data.ProductImages.map((img) => `${process.env.REACT_APP_IMG}/${img.url}`)
+                data.ProductImages.map((img) => getUploadUrl(img.url))
             );
         } else {
             setPreviewUrls([]);

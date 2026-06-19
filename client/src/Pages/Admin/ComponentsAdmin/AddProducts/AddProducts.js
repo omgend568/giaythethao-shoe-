@@ -220,8 +220,22 @@ function AddProducts({ setCheckOpenAddProduct }) {
                 <div style={{ height: '25px' }}>
                     <FontAwesomeIcon id={cx('icon-animation')} icon={faAngleDown} />
                 </div>
-                <label htmlFor="file-upload">Ảnh Sản Phẩm</label>
-                <input id="file-upload" type="file" name="fileImg" multiple onChange={handleFileChange} />
+                <label className={cx('upload-label')} htmlFor="file-upload">
+                    + Chọn hình ảnh sản phẩm
+                </label>
+                <input
+                    id="file-upload"
+                    type="file"
+                    accept="image/*"
+                    name="fileImg"
+                    multiple
+                    onChange={handleFileChange}
+                />
+                <span className={cx('upload-note')}>
+                    {fileImg.length > 0
+                        ? `Đã chọn ${fileImg.length} hình ảnh`
+                        : 'Chưa chọn hình ảnh nào'}
+                </span>
                 <div className={cx('image-container')}>
                     {fileImg.map((file, index) => (
                         <div key={index} className={cx('image-upload')}>

@@ -19,6 +19,25 @@ const formatPriceVN = (price) => {
 
 const cx = classNames.bind(styles);
 
+const getUploadUrl = (filename) => {
+    if (!filename) return '';
+
+    const defaultServer = 'http://localhost:5001';
+    const server = (process.env.REACT_APP_SERVER || defaultServer).replace(/\/$/, '');
+
+    // If REACT_APP_IMG exists, it might already include `/uploads`.
+    const imgBase = process.env.REACT_APP_IMG;
+    if (imgBase) {
+        const base = imgBase.replace(/\/$/, '');
+        if (base.endsWith('/uploads')) return `${base}/${filename}`;
+        if (base.includes('/uploads/')) return `${base}/${filename}`;
+        // Fallback: assume base is server root.
+        return `${base}/uploads/${filename}`;
+    }
+
+    return `${server}/uploads/${filename}`;
+};
+
 function ManageProducts({ setCheckOpenAddProduct }) {
     const [page, setPage] = useState(1);
 
@@ -92,11 +111,13 @@ function ManageProducts({ setCheckOpenAddProduct }) {
                             {currentProducts.map((item) => (
                                 <tr key={item.id}>
                                     <td>
-                                        <img
-                                            style={{ width: '80px' }}
-                                            src={`${process.env.REACT_APP_IMG}/${item.ProductImages?.[0]?.url}`}
-                                            alt=""
-                                        />
+                                        {item.ProductImages?.[0]?.url ? (
+                                            <img
+                                                style={{ width: '80px' }}
+                                                src={getUploadUrl(item.ProductImages[0].url)}
+                                                alt=""
+                                            />
+                                        ) : null}
                                     </td>
                                     <td>{item.name}</td>
                                     <td>

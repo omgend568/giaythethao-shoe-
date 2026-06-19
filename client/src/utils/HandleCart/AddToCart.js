@@ -1,15 +1,15 @@
 import request from '../../Config/api';
+import cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AddToCartProduct = async (variant, quantity) => {
-    const token = document.cookie;
-
-    if (!token) {
-        return toast.error('Bạn Cần Đăng Nhập Trước !!!');
+    if (cookies.get('logged') !== '1') {
+        toast.error('Vui lòng đăng ký và đăng nhập để mua hàng');
+        throw new Error('NOT_LOGGED_IN');
     }
+
     try {
-        // variant is expected to be an object with id and maybe product info
         const { id } = variant;
 
         const res = await request.post('/api/addtocart', {
@@ -18,7 +18,11 @@ const AddToCartProduct = async (variant, quantity) => {
         });
         return res;
     } catch (error) {
-        console.log(error);
+        if (error.message === 'NOT_LOGGED_IN') {
+            throw error;
+        }
+        toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng');
+        throw error;
     }
 };
 
