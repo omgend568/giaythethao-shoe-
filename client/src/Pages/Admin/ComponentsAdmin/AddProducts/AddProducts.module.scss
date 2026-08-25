@@ -5,6 +5,10 @@
     h1 {
         font-size: 25px;
     }
+    :global(.form-check-label) {
+        color: #333;
+        user-select: none;
+    }
 }
 
 .title {

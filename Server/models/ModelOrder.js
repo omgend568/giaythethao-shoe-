@@ -39,6 +39,11 @@ const Order = sequelize.define(
             type: DataTypes.TINYINT,
             defaultValue: 0,
         },
+        delivery_status: {
+            type: DataTypes.TINYINT,
+            defaultValue: 0,
+            comment: '0: Chờ xác nhận, 1: Chuẩn bị hàng, 2: Đang vận chuyển, 3: Đã giao, 4: Hủy, 5: Hoàn trả'
+        },
         createdAt: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,

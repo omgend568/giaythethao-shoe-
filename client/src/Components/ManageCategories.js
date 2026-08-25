@@ -19,10 +19,10 @@ function ManageCategories({ checkOpenAddCategory, setCheckOpenAddCategory }) {
     const [showModalUpdate, setShowModalUpdate] = useState(false);
     const [dataCategories, setDataCategories] = useState([]);
 
-    const categoriesPerPage = 6;
-    const startIndex = (page - 1) * categoriesPerPage;
-    const totalPages = Math.ceil(dataCategories.length / categoriesPerPage);
-    const currentCategories = dataCategories.slice(startIndex, startIndex + categoriesPerPage);
+    const rowsPerPage = 50;
+    const startIndex = (page - 1) * rowsPerPage;
+    const totalPages = Math.ceil(dataCategories.length / rowsPerPage);
+    const currentCategories = dataCategories.slice(startIndex, startIndex + rowsPerPage);
 
     const handlePageChange = (event, value) => {
         setPage(value);

@@ -82,6 +82,7 @@ OrderItem.belongsTo(ProductVariant, { foreignKey: 'productVariantId' });
 // Promotions
 Promotion.belongsToMany(Product, {
     through: PromotionProduct,
+    as: 'PromotionProducts',
     foreignKey: 'promotionId',
     otherKey: 'productId',
 });
@@ -90,6 +91,11 @@ Product.belongsToMany(Promotion, {
     foreignKey: 'productId',
     otherKey: 'promotionId',
 });
+
+// Direct association for querying (no alias to avoid conflict)
+Promotion.hasMany(PromotionProduct, { foreignKey: 'promotionId' });
+PromotionProduct.belongsTo(Promotion, { foreignKey: 'promotionId' });
+PromotionProduct.belongsTo(Product, { foreignKey: 'productId' });
 
 Promotion.hasMany(Order, { foreignKey: 'promotionId', onDelete: 'SET NULL' });
 Order.belongsTo(Promotion, { foreignKey: 'promotionId' });

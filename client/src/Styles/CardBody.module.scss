@@ -15,6 +15,28 @@
     }
 }
 
+.badge-new {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff4444;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+    transition: opacity 0.3s ease;
+
+    svg {
+        font-size: 11px;
+    }
+}
+
 .info {
     h2 {
         font-size: 17px;
@@ -27,7 +49,54 @@
     }
 }
 
+.rating-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+
+    .rating-stars {
+        display: inline-flex;
+        gap: 2px;
+
+        .star {
+            font-size: 12px;
+            color: #ccc;
+
+            &.filled {
+                color: #ffc107;
+            }
+
+            &.half {
+                color: #ffc107;
+                opacity: 0.5;
+            }
+
+            &.empty {
+                color: #ddd;
+            }
+        }
+
+        &.md .star {
+            font-size: 14px;
+        }
+
+        &.lg .star {
+            font-size: 18px;
+        }
+    }
+
+    .rating-count {
+        font-size: 12px;
+        color: #666;
+    }
+}
+
 .container {
+    display: none;
+}
+
+.quick-view-label {
     display: none;
 }
 
@@ -53,6 +122,20 @@
             color: #fff;
             border: 1px solid #fff;
         }
+    }
+    .quick-view-label {
+        display: block;
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.65);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
     }
 }
 

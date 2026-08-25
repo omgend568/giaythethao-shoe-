@@ -18,7 +18,7 @@ function Slider() {
                     />
                     <div id={cx('info')}>
                         <span style={{ fontWeight: '800' }}>Miễn phí vận chuyển</span>
-                        <span>Cho đơn hàng từ 800k</span>
+                        <span>Cho đơn hàng từ 500k</span>
                     </div>
                 </div>
 

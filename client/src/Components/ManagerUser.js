@@ -8,7 +8,7 @@ import classNames from 'classnames/bind';
 import styles from '../Styles/ManagerUser.module.scss';
 
 import Pagination from './Pagination';
-import ModalDeleteUser from '../utils/Modal/ModalDeleteUser';
+import ModalLockUser from '../utils/Modal/ModalLockUser';
 
 const cx = classNames.bind(styles);
 
@@ -17,7 +17,8 @@ function ManagerUser() {
 
     const [dataOneUser, setDataOneUser] = useState({});
 
-    const [show, setShow] = useState(false);
+    const [showLock, setShowLock] = useState(false);
+    const [isLocking, setIsLocking] = useState(true);
 
     const [page, setPage] = useState(1);
     const productsPerPage = 10;
@@ -35,11 +36,12 @@ function ManagerUser() {
             setDataAllUser(res.data);
         };
         fetchData();
-    }, [show]);
+    }, [showLock]);
 
-    const showModalDeleteUser = (user) => {
-        setShow(true);
+    const showModalLockUser = (user, locking) => {
+        setShowLock(true);
         setDataOneUser(user);
+        setIsLocking(locking);
     };
 
     return (
@@ -49,26 +51,50 @@ function ManagerUser() {
             <table className="table table-bordered border-primary table-hover mt-3">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
                         <th scope="col">Tên Người Dùng</th>
                         <th scope="col">Email</th>
                         <th scope="col">Số Điện Thoại</th>
                         <th scope="col">Chức Vụ</th>
+                        <th scope="col">Trạng Thái</th>
                         <th scope="col">Hành Động</th>
                     </tr>
                 </thead>
                 <tbody>
                     {currentProducts.map((user) => (
                         <tr key={user.id}>
-                            <th scope="row">{user.id.toString().slice(0, 5)}</th>
                             <td>{user.fullname}</td>
                             <td>{user.email}</td>
                             <td>{user.phone}</td>
                             <td>{user.isAdmin ? 'Quản Trị Viên' : 'Người Dùng'}</td>
                             <td>
-                                <button onClick={() => showModalDeleteUser(user)} type="button" class="btn btn-danger">
-                                    Xóa Người Dùng
-                                </button>
+                                {user.isLocked ? (
+                                    <span className={cx('status-locked')}>Đã Khóa</span>
+                                ) : (
+                                    <span className={cx('status-active')}>Hoạt Động</span>
+                                )}
+                            </td>
+                            <td>
+                                {!user.isAdmin && (
+                                    <>
+                                        {user.isLocked ? (
+                                            <button
+                                                onClick={() => showModalLockUser(user, false)}
+                                                type="button"
+                                                className="btn btn-success btn-sm me-2"
+                                            >
+                                                Mở Khóa
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => showModalLockUser(user, true)}
+                                                type="button"
+                                                className="btn btn-warning btn-sm me-2"
+                                            >
+                                                Khóa
+                                            </button>
+                                        )}
+                                    </>
+                                )}
                             </td>
                         </tr>
                     ))}
@@ -76,7 +102,12 @@ function ManagerUser() {
             </table>
             <div className={cx('pagination')}>
                 <Pagination page={page} totalPages={totalPages} handlePageChange={handlePageChange} />
-                <ModalDeleteUser show={show} setShow={setShow} dataOneUser={dataOneUser} />
+                <ModalLockUser
+                    show={showLock}
+                    setShow={setShowLock}
+                    dataOneUser={dataOneUser}
+                    isLocking={isLocking}
+                />
             </div>
         </div>
     );

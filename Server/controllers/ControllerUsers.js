@@ -69,6 +69,9 @@ class ControllerUser {
             if (!dataUser) {
                 return res.status(401).json({ message: 'Email Hoặc Mật Không Chính Xác !!!' });
             }
+            if (dataUser.isLocked) {
+                return res.status(403).json({ message: 'Tài Khoản Của Bạn Đã Bị Khóa !!!' });
+            }
             if (!dataUser.password) {
                 return res.status(401).json({
                     message: 'Tài khoản này đăng ký bằng Google. Vui lòng đăng nhập bằng Google.',
@@ -121,6 +124,9 @@ class ControllerUser {
             }
 
             if (dataUser) {
+                if (dataUser.isLocked) {
+                    return res.status(403).json({ message: 'Tài Khoản Của Bạn Đã Bị Khóa !!!' });
+                }
                 if (!dataUser.googleId) {
                     await dataUser.update({ googleId });
                 }
@@ -191,8 +197,12 @@ class ControllerUser {
 
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
             const token = jwt.sign({ email, otp }, SECRET_KEY, { expiresIn: OTP_EXPRIRY });
-            ForgotPassword(email, token, otp);
-            return res.status(200).json({ message: 'Thành Công !!!' });
+
+            // Gửi email với OTP (đợi email được gửi thành công)
+            await ForgotPassword(email, token, otp);
+            
+            // Trả về token cho frontend để lưu vào localStorage
+            return res.status(200).json({ message: 'Thành Công !!!', token });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Lỗi server' });
@@ -252,6 +262,53 @@ class ControllerUser {
             
             await findUser.destroy();
             return res.status(200).json({ message: 'Xóa Người Dùng Thành Công !!!' });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Lỗi server' });
+        }
+    }
+
+    async LockUser(req, res) {
+        try {
+            const { id } = req.body;
+            const token = req.cookies;
+            const decoded = jwtDecode(token.Token);
+            
+            // Kiểm tra user hiện tại
+            const currentUser = await User.findOne({ where: { email: decoded.email } });
+            if (currentUser.id === parseInt(id)) {
+                return res.status(400).json({ message: 'Không thể khóa chính mình !!!' });
+            }
+            
+            // Kiểm tra user muốn khóa
+            const findUser = await User.findOne({ where: { id } });
+            if (!findUser) {
+                return res.status(404).json({ message: 'Người dùng không tồn tại' });
+            }
+            if (findUser.isAdmin === true) {
+                return res.status(400).json({ message: 'Không thể khóa Admin !!!' });
+            }
+            
+            await findUser.update({ isLocked: true });
+            return res.status(200).json({ message: 'Khóa Tài Khoản Thành Công !!!' });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Lỗi server' });
+        }
+    }
+
+    async UnlockUser(req, res) {
+        try {
+            const { id } = req.body;
+            
+            // Kiểm tra user muốn mở khóa
+            const findUser = await User.findOne({ where: { id } });
+            if (!findUser) {
+                return res.status(404).json({ message: 'Người dùng không tồn tại' });
+            }
+            
+            await findUser.update({ isLocked: false });
+            return res.status(200).json({ message: 'Mở Khóa Tài Khoản Thành Công !!!' });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Lỗi server' });

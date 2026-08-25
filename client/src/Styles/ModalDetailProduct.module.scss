@@ -64,11 +64,11 @@
         border: none;
         height: 40px;
         border-radius: 20px;
-        background-color: #efefef;
-        color: #ccc;
+        background-color: #111;
+        color: #fff;
     }
     button:hover {
-        background-color: #3a3a3a;
+        background-color: #000;
         color: #fff;
         transition: 0.4s;
     }
@@ -80,14 +80,17 @@
     gap: 20px;
     .form-size {
         display: flex;
+        flex-wrap: wrap;
         gap: 10px;
         button {
-            width: 40px;
+            min-width: 40px;
             height: 40px;
+            padding: 0 12px;
             border: none;
             background: none;
             border: 2px solid #ccc;
             border-radius: 10px;
+            white-space: nowrap;
         }
     }
     span {

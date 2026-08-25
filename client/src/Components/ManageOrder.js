@@ -25,6 +25,7 @@ function ManageOrder() {
     const [showModal, setShowModal] = useState(false);
     const [idPro, setIdPro] = useState(0);
     const [address, setAddress] = useState('');
+    const [currentStatus, setCurrentStatus] = useState({ deliveryStatus: 0, paymentMethod: '' });
     const [showModalCancelOrder, setShowModalCancelOrder] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState({});
 
@@ -38,19 +39,20 @@ function ManageOrder() {
     }, [showModal, showModalCancelOrder]);
 
     const [page, setPage] = useState(1);
-    const productsPerPage = 5;
-    const startIndex = (page - 1) * productsPerPage;
-    const totalPages = Math.ceil(dataCart.length / productsPerPage);
-    const currentProducts = dataCart.slice(startIndex, startIndex + productsPerPage);
+    const rowsPerPage = 50;
+    const startIndex = (page - 1) * rowsPerPage;
+    const totalPages = Math.ceil(dataCart.length / rowsPerPage);
+    const currentProducts = dataCart.slice(startIndex, startIndex + rowsPerPage);
 
     const handlePageChange = (event, value) => {
         setPage(value);
     };
 
-    const handleShowModalEdit = (id, address1) => {
+    const handleShowModalEdit = (id, address1, deliveryStatus, paymentMethod, orderStatus) => {
         setShowModal(!showModal);
         setIdPro(id);
         setAddress(address1);
+        setCurrentStatus({ deliveryStatus, paymentMethod, status: orderStatus });
     };
 
     const handleShowModalCancelOrder = (item) => {
@@ -73,14 +75,15 @@ function ManageOrder() {
                             <th scope="col">Size</th>
                             <th scope="col">Số Lượng</th>
                             <th scope="col">Tổng Giá Tiền</th>
-                            <th scope="col">Tình Trạng</th>
+                            <th scope="col">Thanh Toán</th>
+                            <th scope="col">Giao Hàng</th>
                             <th scope="col">Hành Động</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentProducts.map((order) =>
-                            order.OrderItems && order.OrderItems.map((item, index) => (
-                                <tr key={order.id || index}>
+                            order.OrderItems && order.OrderItems.length > 0 && order.OrderItems.map((item, index) => (
+                                <tr key={`${order.id}-${item.id || index}`}>
                                     {index === 0 && (
                                         <>
                                             <td rowSpan={order.OrderItems.length}>{order.User?.fullname}</td>
@@ -94,34 +97,53 @@ function ManageOrder() {
                                     {index === 0 && (
                                         <>
                                             <td rowSpan={order.OrderItems.length}>{formatPriceVN(order.total_price)}</td>
+                                            {/* Trạng thái thanh toán */}
                                             <td rowSpan={order.OrderItems.length}>
-                                                {order.status === 2
-                                                    ? 'Chuẩn Bị Hàng'
-                                                    : order.status === 0
-                                                    ? 'Đang Vận Chuyển'
-                                                    : order.status === 1
-                                                    ? 'Đã Giao Thành Công'
-                                                    : order.status === 3
-                                                    ? 'Đã Hủy'
-                                                    : order.status === 6
-                                                    ? 'Đã Hoàn Trả'
-                                                    : order.status === 7
-                                                    ? 'Hoàn Trả Một Phần'
-                                                    : 'Chờ Xác Nhận'}
+                                                {order.status === 1 ? (
+                                                    <span className="badge bg-success">Đã thanh toán</span>
+                                                ) : order.status === 0 && order.delivery_status === 3 ? (
+                                                    <span className="badge bg-success">Đã thanh toán</span>
+                                                ) : order.status === 0 ? (
+                                                    <span className="badge bg-warning text-dark">Chưa thanh toán</span>
+                                                ) : order.status === 2 ? (
+                                                    <span className="badge bg-info">Hoàn tiền</span>
+                                                ) : (
+                                                    <span className="badge bg-secondary">Khác</span>
+                                                )}
                                             </td>
+                                            {/* Trạng thái giao hàng */}
                                             <td rowSpan={order.OrderItems.length}>
-                                                {order.status !== 3 && order.status !== 1 && order.status !== 6 && (
+                                                {order.delivery_status === 0 ? (
+                                                    <span className="badge bg-secondary">Chờ xác nhận</span>
+                                                ) : order.delivery_status === 1 ? (
+                                                    <span className="badge bg-info">Chuẩn bị hàng</span>
+                                                ) : order.delivery_status === 2 ? (
+                                                    <span className="badge bg-primary">Đang vận chuyển</span>
+                                                ) : order.delivery_status === 3 ? (
+                                                    <span className="badge bg-success">Đã giao</span>
+                                                ) : order.delivery_status === 4 ? (
+                                                    <span className="badge bg-danger">Đã hủy</span>
+                                                ) : order.delivery_status === 5 ? (
+                                                    <span className="badge bg-dark">Hoàn trả</span>
+                                                ) : (
+                                                    <span className="badge bg-secondary">Khác</span>
+                                                )}
+                                            </td>
+                                            {/* Hành động */}
+                                            <td rowSpan={order.OrderItems.length}>
+                                                {order.delivery_status !== 3 && order.delivery_status !== 4 && order.delivery_status !== 5 && (
                                                     <>
                                                         <button
-                                                            onClick={() => handleShowModalEdit(order.id)}
-                                                            className="btn btn-primary"
-                                                            style={{ marginRight: '10px' }}
+                                                            onClick={() => handleShowModalEdit(order.id, order.address, order.delivery_status, order.Payment?.method, order.status)}
+                                                            className="btn btn-primary btn-sm"
+                                                            style={{ marginRight: '5px', marginBottom: '5px' }}
                                                         >
-                                                            Xác Nhận
+                                                            Tiếp Theo
                                                         </button>
                                                         <button
                                                             onClick={() => handleShowModalCancelOrder(order)}
-                                                            className="btn btn-danger"
+                                                            className="btn btn-danger btn-sm"
+                                                            style={{ marginBottom: '5px' }}
                                                         >
                                                             Hủy
                                                         </button>
@@ -139,12 +161,15 @@ function ManageOrder() {
                     <Pagination page={page} totalPages={totalPages} handlePageChange={handlePageChange} />
                 </div>
             </div>
-            <ModalEditOrder show={showModal} setShow={setShowModal} id={idPro} address={address} />
+            <ModalEditOrder show={showModal} setShow={setShowModal} id={idPro} address={address} currentStatus={currentStatus} />
             <ModalCancelOrder
                 show={showModalCancelOrder}
                 setShow={setShowModalCancelOrder}
                 item={selectedProduct}
-                onSuccess={() => setShowModalCancelOrder(false)}
+                onSuccess={() => {
+                    setShowModalCancelOrder(false);
+                    setSelectedProduct({});
+                }}
             />
         </div>
     );

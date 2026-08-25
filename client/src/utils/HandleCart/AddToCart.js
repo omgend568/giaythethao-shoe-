@@ -21,7 +21,12 @@ const AddToCartProduct = async (variant, quantity) => {
         if (error.message === 'NOT_LOGGED_IN') {
             throw error;
         }
-        toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng');
+        const message = error.response?.data?.message;
+        if (message) {
+            toast.error(message);
+        } else {
+            toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng');
+        }
         throw error;
     }
 };

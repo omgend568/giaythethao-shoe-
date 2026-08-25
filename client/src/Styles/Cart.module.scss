@@ -21,7 +21,7 @@
 
 .cart-products {
     width: 100%;
-    height: 200px;
+    min-height: 200px;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -54,12 +54,21 @@
 }
 
 .form-quantity {
+    display: flex;
+    align-items: center;
+
     button {
         width: 40px;
         height: 39px;
         border: none;
         background: none;
         border: 1px solid #ccc;
+        cursor: pointer;
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
     }
     #quantity {
         text-align: center;
@@ -69,6 +78,91 @@
         border: 1px solid #ccc;
         outline: none;
     }
+}
+
+.cart-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 17px;
+    font-weight: 700;
+
+    select {
+        min-width: 80px;
+        height: 39px;
+        padding: 0 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+}
+
+.color-label {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.variant-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.variant-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.color-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.color-option {
+    height: 34px;
+    border-radius: 10px;
+    padding: 0 14px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    color: #333;
+}
+
+.size-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.size-option {
+    height: 38px;
+    min-width: 44px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    color: #333;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.active {
+    background: #888;
+    border-color: #ccc;
+    color: #fff;
 }
 
 .remove-product {

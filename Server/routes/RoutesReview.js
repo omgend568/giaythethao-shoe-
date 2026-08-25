@@ -35,6 +35,8 @@ router.get('/product', controller.GetProductReviews);
 router.get('/review', controller.GetReviewById);
 router.get('/user', ControllerJWT.verifyToken, controller.GetUserReviews);
 router.put('/update', ControllerJWT.verifyToken, upload.array('images'), controller.UpdateReview);
+router.put('/hide', ControllerJWT.verifyTokenAdmin, controller.HideReview);
+router.put('/unhide', ControllerJWT.verifyTokenAdmin, controller.UnhideReview);
 router.delete('/delete', ControllerJWT.verifyTokenAdmin, controller.DeleteReview);
 router.get('/stats', controller.GetReviewStats);
 router.get('/all', controller.GetAllReviews);

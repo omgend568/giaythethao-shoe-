@@ -1,5 +1,8 @@
 Server/node_modules
 Server/.env
+Server/uploads
 client/node_modules
 client/.env
 client/build
+.DS_Store
+.vscode

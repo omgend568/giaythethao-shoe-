@@ -3,6 +3,11 @@ import styles from './HomePage.module.scss';
 
 import ManagerProduct from '../../../Components/ManageProducts';
 import ManageCategories from '../../../Components/ManageCategories';
+import ManageOrder from '../../../Components/ManageOrder';
+import ManageComments from '../../../Components/ManageComments';
+import ManagePromotions from '../../../Components/ManagePromotions';
+import ManagerUser from '../../../Components/ManagerUser';
+import ManageStatistics from '../../../Components/ManageStatistics';
 import AddProducts from '../ComponentsAdmin/AddProducts/AddProducts';
 import { useState } from 'react';
 
@@ -28,6 +33,16 @@ function HomePage({ checkTypeSlideBar }) {
                     setCheckOpenAddCategory={setCheckOpenAddCategory}
                 />
             ) : null}
+
+            {checkTypeSlideBar === 3 ? <ManageOrder /> : null}
+
+            {checkTypeSlideBar === 4 ? <ManageComments /> : null}
+
+            {checkTypeSlideBar === 5 ? <ManagePromotions /> : null}
+
+            {checkTypeSlideBar === 6 ? <ManagerUser /> : null}
+
+            {checkTypeSlideBar === 7 ? <ManageStatistics /> : null}
         </div>
     );
 }

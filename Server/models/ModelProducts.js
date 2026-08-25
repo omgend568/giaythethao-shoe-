@@ -35,6 +35,10 @@ const Product = sequelize.define(
         rating_count: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
+        },
+        is_new: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
         }
     },
     {

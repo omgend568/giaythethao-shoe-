@@ -16,5 +16,7 @@ router.get('/refresh-token', ControllerUser.RefreshToken);
 
 router.get('/getalluser', ControllerJWT.verifyTokenAdmin, ControllerUser.getAllUser);
 router.delete('/deleteuser', ControllerJWT.verifyTokenAdmin, ControllerUser.DeleteUser);
+router.post('/lockuser', ControllerJWT.verifyTokenAdmin, ControllerUser.LockUser);
+router.post('/unlockuser', ControllerJWT.verifyTokenAdmin, ControllerUser.UnlockUser);
 
 module.exports = router;

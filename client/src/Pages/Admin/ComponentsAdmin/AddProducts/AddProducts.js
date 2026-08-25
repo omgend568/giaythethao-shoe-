@@ -24,6 +24,7 @@ function AddProducts({ setCheckOpenAddProduct }) {
     const [variants, setVariants] = useState([
         { color: '', sizesText: '', price: 0, stock: 0 },
     ]);
+    const [isNew, setIsNew] = useState(false);
 
     useEffect(() => {
         const initBrands = async () => {
@@ -103,6 +104,7 @@ function AddProducts({ setCheckOpenAddProduct }) {
         formData.append('brandId', Number(brandId));
         formData.append('categoryId', Number(selectedCategory));
         formData.append('variants', JSON.stringify(preparedVariants));
+        formData.append('is_new', isNew);
 
         fileImg.forEach((file) => {
             formData.append('fileImg', file);
@@ -129,6 +131,7 @@ function AddProducts({ setCheckOpenAddProduct }) {
         setSelectedCategory('');
         setFileImg([]);
         setVariants([{ color: '', sizesText: '', price: 0, stock: 0 }]);
+        setIsNew(false);
     };
 
     return (
@@ -179,42 +182,58 @@ function AddProducts({ setCheckOpenAddProduct }) {
                 ))}
             </select>
 
-            <Editor
-                apiKey="n4hxnmi16uwk9dmdgfx6nscsf8oc30528dlcub1mzsk8deqy"
-                onInit={(evt, editor) => (editorRef.current = editor)}
-                initialValue={description}
-                init={{
-                    height: 500,
-                    menubar: false,
-                    plugins: [
-                        'advlist',
-                        'autolink',
-                        'lists',
-                        'link',
-                        'image',
-                        'charmap',
-                        'preview',
-                        'anchor',
-                        'searchreplace',
-                        'visualblocks',
-                        'code',
-                        'fullscreen',
-                        'insertdatetime',
-                        'media',
-                        'table',
-                        'code',
-                        'help',
-                        'wordcount',
-                    ],
-                    toolbar:
-                        'undo redo | formatselect | ' +
-                        'bold italic forecolor | alignleft aligncenter ' +
-                        'alignright alignjustify | bullist numlist outdent indent | ' +
-                        'removeformat | help',
-                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                }}
-                onChange={handleEditorChange}
-            />
+            <div className="form-check mb-3">
+                <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="isNewCheck"
+                    checked={isNew}
+                    onChange={(e) => setIsNew(e.target.checked)}
+                />
+                <label className="form-check-label" htmlFor="isNewCheck">
+                    Sản phẩm mới
+                </label>
+            </div>
+
+            <div className="mt-4">
+                <label className="mb-2 d-block">Mô tả sản phẩm</label>
+                <Editor
+                    apiKey="n4hxnmi16uwk9dmdgfx6nscsf8oc30528dlcub1mzsk8deqy"
+                    onInit={(evt, editor) => (editorRef.current = editor)}
+                    initialValue={description}
+                    init={{
+                        height: 500,
+                        menubar: false,
+                        plugins: [
+                            'advlist',
+                            'autolink',
+                            'lists',
+                            'link',
+                            'image',
+                            'charmap',
+                            'preview',
+                            'anchor',
+                            'searchreplace',
+                            'visualblocks',
+                            'code',
+                            'fullscreen',
+                            'insertdatetime',
+                            'media',
+                            'table',
+                            'code',
+                            'help',
+                            'wordcount',
+                        ],
+                        toolbar:
+                            'undo redo | formatselect | ' +
+                            'bold italic forecolor | alignleft aligncenter ' +
+                            'alignright alignjustify | bullist numlist outdent indent | ' +
+                            'removeformat | help',
+                        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                    }}
+                    onChange={handleEditorChange}
+                />
+            </div>
 
             <div className={cx('form-upload-image')}>
                 <div style={{ height: '25px' }}>
@@ -261,36 +280,63 @@ function AddProducts({ setCheckOpenAddProduct }) {
                             }}
                         />
                         <input
-                            type="text"
+                            type="number"
                             placeholder="Sizes (cách nhau bởi dấu phẩy: 38,39,40)"
                             className="form-control"
+                            min="0"
                             value={v.sizesText}
                             onChange={(e) => {
                                 const newVars = [...variants];
                                 newVars[idx].sizesText = e.target.value;
                                 setVariants(newVars);
                             }}
+                            onBlur={(e) => {
+                                if (e.target.value < 0) {
+                                    toast.error('Size không được nhỏ hơn 0');
+                                    const newVars = [...variants];
+                                    newVars[idx].sizesText = '';
+                                    setVariants(newVars);
+                                }
+                            }}
                         />
                         <input
                             type="number"
                             placeholder="Giá"
                             className="form-control"
+                            min="0"
                             value={v.price}
                             onChange={(e) => {
                                 const newVars = [...variants];
                                 newVars[idx].price = e.target.value;
                                 setVariants(newVars);
                             }}
+                            onBlur={(e) => {
+                                if (e.target.value < 0) {
+                                    toast.error('Giá không được nhỏ hơn 0');
+                                    const newVars = [...variants];
+                                    newVars[idx].price = 0;
+                                    setVariants(newVars);
+                                }
+                            }}
                         />
                         <input
                             type="number"
                             placeholder="Stock"
                             className="form-control"
+                            min="0"
                             value={v.stock}
                             onChange={(e) => {
                                 const newVars = [...variants];
                                 newVars[idx].stock = e.target.value;
                                 setVariants(newVars);
+                            }}
+                            onBlur={(e) => {
+                                if (e.target.value < 0) {
+                                    toast.error('Stock không được nhỏ hơn 0');
+                                    const newVars = [...variants];
+                                    newVars[idx].stock = 0;
+                                    setVariants(newVars);
+                                }
                             }}
                         />
                         {variants.length > 1 && (

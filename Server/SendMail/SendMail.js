@@ -20,7 +20,7 @@ const sendMail = async (email) => {
     try {
         // Nếu không có OAuth credentials, bỏ qua gửi email
         if (!oAuth2Client || !EMAIL_USER) {
-            console.log('⚠️ Google OAuth credentials không được cấu hình. Email không được gửi.');
+            console.log(' Google OAuth credentials không được cấu hình. Email không được gửi.');
             return;
         }
 
@@ -37,7 +37,7 @@ const sendMail = async (email) => {
             },
         });
         const info = await transport.sendMail({
-            from: `"GLAB 👻" <${EMAIL_USER}>`, // sender address
+            from: `"GLAB " <${EMAIL_USER}>`, // sender address
             to: email, // list of receivers
             subject: 'Thanks', // Subject line
             text: 'Hello world?', // plain text body
@@ -51,9 +51,8 @@ const sendMail = async (email) => {
             Best regards,
             Alibarbie</b>`,
         });
-        console.log('✅ Email gửi thành công');
     } catch (error) {
-        console.log('⚠️ Lỗi gửi email:', error.message);
+        console.log(' Lỗi gửi email:', error.message);
         // Không throw error - cho phép chương trình tiếp tục ngay cả khi email gặp lỗi
     }
 };

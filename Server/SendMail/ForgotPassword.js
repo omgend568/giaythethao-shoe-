@@ -20,9 +20,12 @@ const ForgotPassword = async (email, token, otp) => {
     try {
         // Nếu không có OAuth credentials, bỏ qua gửi email
         if (!oAuth2Client || !EMAIL_USER) {
-            console.log('⚠️ Google OAuth credentials không được cấu hình. Email không được gửi.');
+            console.log(' Google OAuth credentials không được cấu hình. Email không được gửi.');
             return;
         }
+
+        // Tạo link reset password với token
+        const resetLink = `http://localhost:3000/reset-password?token=${token}`;
 
         const accessToken = await oAuth2Client.getAccessToken();
         const transport = nodemailer.createTransport({
@@ -39,7 +42,7 @@ const ForgotPassword = async (email, token, otp) => {
         const info = await transport.sendMail({
             from: `"GLAB" <${EMAIL_USER}>`,
             to: email,
-            subject: '🔐 Khôi phục mật khẩu - GLAB',
+            subject: ' Khôi phục mật khẩu - GLAB',
             html: `
                 <div style="max-width: 500px; margin: auto; font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
                     <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 10px rgba(0,0,0,0.1);">
@@ -49,11 +52,14 @@ const ForgotPassword = async (email, token, otp) => {
                         <div style="text-align: center; margin: 20px 0;">
                             <span style="display: inline-block; font-size: 22px; font-weight: bold; color: #d63384; background: #ffe8f0; padding: 10px 20px; border-radius: 5px;">${otp}</span>
                         </div>
-                         <p style="color: #555; font-size: 16px;">Token xác thực của bạn:</p>
-                        <div style="text-align: center; margin: 10px 0;">
-                            <span style="display: inline-block; font-size: 14px; color: #333; background: #eee; padding: 8px 15px; border-radius: 5px;">${token}</span>
+                        <p style="color: #555; font-size: 14px;">Mã OTP có hiệu lực trong 15 phút.</p>
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="color: #555; font-size: 14px;">Hoặc click nút bên dưới để đặt lại mật khẩu:</p>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <a href="${resetLink}" style="display: inline-block; background: #007bff; color: #fff; text-decoration: none; padding: 12px 30px; border-radius: 5px; font-size: 16px;">Đặt lại mật khẩu</a>
                         </div>
-                        <p style="color: #999; font-size: 14px; text-align: center;">Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.</p>
+                        <p style="color: #999; font-size: 12px; word-break: break-all;">Hoặc copy link này vào trình duyệt:<br/>${resetLink}</p>
+                        <p style="color: #999; font-size: 14px; text-align: center; margin-top: 20px;">Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.</p>
                     </div>
                     <div style="text-align: center; font-size: 12px; color: #888; margin-top: 20px;">
                         <p>© 2025 GLAB. All rights reserved.</p>
@@ -61,10 +67,9 @@ const ForgotPassword = async (email, token, otp) => {
                 </div>
             `,
         });
-        console.log('✅ Email gửi thành công');
+       
     } catch (error) {
-        console.log('⚠️ Lỗi gửi email:', error.message);
-        // Không throw error - cho phép chương trình tiếp tục ngay cả khi email gặp lỗi
+        console.log(' Lỗi gửi email:', error.message);
     }
 };
 

@@ -23,6 +23,34 @@ const formatPriceVN = (price) => {
     }).format(price);
 };
 
+const sortVariantsBySize = (variants) =>
+    [...variants].sort((a, b) => {
+        const sizeA = Number(a.size);
+        const sizeB = Number(b.size);
+        if (!Number.isNaN(sizeA) && !Number.isNaN(sizeB)) {
+            return sizeA - sizeB;
+        }
+        return String(a.size).localeCompare(String(b.size), 'vi', { numeric: true });
+    });
+
+const getSizeOptions = (item) => {
+    const color = item?.ProductVariant?.color;
+    const variants = item?.ProductVariant?.Product?.ProductVariants || [];
+    return sortVariantsBySize(variants.filter((v) => v.color === color));
+};
+
+const getColorOptions = (item) => {
+    const variants = item?.ProductVariant?.Product?.ProductVariants || [];
+    return Array.from(new Set(variants.map((v) => v.color))).filter(Boolean);
+};
+
+const getMaxStock = (item) => {
+    const stock = item?.ProductVariant?.stock;
+    if (stock === undefined || stock === null) return Infinity;
+    const parsed = Number(stock);
+    return Number.isNaN(parsed) ? 0 : parsed;
+};
+
 function Cart() {
     const [dataProducts, setDataProducts] = useState([]);
     const navigate = useNavigate();
@@ -55,6 +83,32 @@ function Cart() {
     const handleDeleteCart = async (cartItemId) => {
         await request.post('/api/deletecart', { cartItemId }).then((res) => toast.success(res.data.message));
         getCart();
+    };
+
+    const handleUpdateQuantity = async (cartItemId, quantity, maxStock) => {
+        if (quantity < 1) return;
+
+        if (quantity > maxStock) {
+            toast.error(maxStock > 0 ? `Chỉ còn ${maxStock} sản phẩm trong kho` : 'Sản phẩm đã hết hàng');
+            return;
+        }
+
+        try {
+            await request.post('/api/updatecart', { cartItemId, quantity });
+            await getCart();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Không thể cập nhật số lượng');
+        }
+    };
+
+    const handleUpdateVariant = async (cartItemId, productVariantId, currentQuantity) => {
+        if (!productVariantId) return;
+        try {
+            await request.post('/api/updatecart', { cartItemId, productVariantId, quantity: currentQuantity });
+            await getCart();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Không thể cập nhật variant');
+        }
     };
 
     useEffect(() => {
@@ -100,7 +154,10 @@ function Cart() {
                 <div className={cx('inner')}>
                     {dataCart && dataCart.CartItems && dataCart.CartItems.length > 0 ? (
                         <div>
-                            {dataProducts?.map((item) => (
+                            {dataProducts?.map((item) => {
+                                const maxStock = getMaxStock(item);
+
+                                return (
                                 <div key={item.id} className={cx('cart-products')}>
                                     <div className={cx('img-product')}>
                                         <img
@@ -114,19 +171,99 @@ function Cart() {
                                     <div className={cx('info-product')}>
                                         <h2>{item?.ProductVariant?.Product?.name}</h2>
 
-                                        <span style={{ fontSize: '17px', fontWeight: '700' }}>
-                                            Số Lượng: x{item?.quantity}
-                                        </span>
-                                        {item?.ProductVariant?.size && (
-                                            <span style={{ fontSize: '17px', fontWeight: '700' }}>
-                                                Size: {item?.ProductVariant?.size}
-                                            </span>
-                                        )}
-                                        {item?.ProductVariant?.color && (
-                                            <span style={{ fontSize: '17px', fontWeight: '700' }}>
-                                                Màu: {item?.ProductVariant?.color}
-                                            </span>
-                                        )}
+                                        <div className={cx('cart-controls')}>
+                                            <div className={cx('control-row')}>
+                                                <span>Số lượng:</span>
+                                                <div className={cx('form-quantity')}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleUpdateQuantity(
+                                                                item.id,
+                                                                item.quantity - 1,
+                                                                maxStock
+                                                            )
+                                                        }
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <input id={cx('quantity')} value={item.quantity} readOnly />
+                                                    <button
+                                                        type="button"
+                                                        disabled={item.quantity >= maxStock}
+                                                        onClick={() =>
+                                                            handleUpdateQuantity(
+                                                                item.id,
+                                                                item.quantity + 1,
+                                                                maxStock
+                                                            )
+                                                        }
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className={cx('variant-selection')}>
+                                                {item?.ProductVariant?.color && (
+                                                    <div className={cx('variant-group')}>
+                                                        <span className={cx('color-label')}>Màu:</span>
+                                                        <div className={cx('color-options')}>
+                                                            {getColorOptions(item).map((col) => {
+                                                                const currentSize = item?.ProductVariant?.size;
+                                                                const variants = item?.ProductVariant?.Product?.ProductVariants || [];
+                                                                const target = variants.find(
+                                                                    (v) =>
+                                                                        v.color === col &&
+                                                                        String(v.size) === String(currentSize)
+                                                                );
+                                                                const targetStock = Number(target?.stock || 0);
+
+                                                                return (
+                                                                    <button
+                                                                        key={col}
+                                                                        type="button"
+                                                                        className={cx('color-option', col === item?.ProductVariant?.color ? 'active' : '')}
+                                                                        onClick={() => {
+                                                                            if (!target || targetStock < item.quantity) {
+                                                                                toast.error('Hết size cùng loại');
+                                                                                return;
+                                                                            }
+                                                                            if (target.id === item?.ProductVariant?.id) return;
+                                                                            handleUpdateVariant(item.id, target.id, item.quantity);
+                                                                        }}
+                                                                    >
+                                                                        {col}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {item?.ProductVariant?.size && (
+                                                    <div className={cx('variant-group')}>
+                                                        <span className={cx('color-label')}>Kích cỡ:</span>
+                                                        <div className={cx('size-options')}>
+                                                            {getSizeOptions(item).map((variant) => (
+                                                                <button
+                                                                    key={variant.id}
+                                                                    type="button"
+                                                                    className={cx(
+                                                                        'size-option',
+                                                                        variant.size === item?.ProductVariant?.size ? 'active' : ''
+                                                                    )}
+                                                                    onClick={() => handleUpdateVariant(item.id, variant.id, item.quantity)}
+                                                                >
+                                                                    {variant.size}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
                                         <span id={cx('price')}>{formatPriceVN(item?.price * item?.quantity)}</span>
                                     </div>
 
@@ -136,7 +273,8 @@ function Cart() {
                                         </button>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className={cx('no-product')}>

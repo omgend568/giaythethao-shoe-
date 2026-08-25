@@ -30,6 +30,10 @@ const User = sequelize.define(
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
+        isLocked: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
         phone: {
             type: DataTypes.STRING(20),
             defaultValue: '',

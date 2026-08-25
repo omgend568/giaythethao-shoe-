@@ -5,6 +5,104 @@
     border-radius: 8px;
     background-color: #f9f9f9;
 
+    h3 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    h4 {
+        font-size: 1.1em;
+        color: #555;
+        margin-bottom: 15px;
+    }
+
+    .rating-summary {
+        display: flex;
+        gap: 40px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 20px;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .summary-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 150px;
+
+            .average-score {
+                font-size: 3em;
+                font-weight: bold;
+                color: #333;
+            }
+
+            .stars-display {
+                margin: 10px 0;
+
+                .star {
+                    font-size: 1.2em;
+                    color: #ddd;
+
+                    &.filled {
+                        color: #ffc107;
+                    }
+                }
+            }
+
+            .total-reviews {
+                font-size: 0.9em;
+                color: #666;
+            }
+        }
+
+        .summary-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+
+            .rating-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 0.9em;
+
+                span:first-child {
+                    width: 50px;
+                    color: #666;
+                }
+
+                .progress-bar {
+                    flex: 1;
+                    height: 8px;
+                    background-color: #e9ecef;
+                    border-radius: 4px;
+                    overflow: hidden;
+
+                    .progress-fill {
+                        height: 100%;
+                        background-color: #ffc107;
+                        transition: width 0.3s ease;
+                    }
+                }
+
+                .count {
+                    width: 30px;
+                    text-align: right;
+                    color: #666;
+                }
+            }
+        }
+    }
+
     .average-rating {
         display: flex;
         align-items: center;
@@ -22,58 +120,122 @@
 
     .add-comment {
         margin-bottom: 20px;
-        padding: 15px;
+        padding: 20px;
         background-color: white;
         border-radius: 8px;
+        border: 1px solid #e0e0e0;
+
+        h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
 
         textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ccc;
             border-radius: 4px;
             resize: vertical;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-family: inherit;
+            font-size: 1em;
+
+            &:focus {
+                outline: none;
+                border-color: #007bff;
+            }
         }
 
         .rating-select {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
 
             label {
-                margin-right: 10px;
-                font-weight: bold;
+                margin-right: 15px;
+                font-weight: 600;
+                color: #333;
             }
 
-            select {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
+            .stars-interactive {
+                display: inline-flex;
+                gap: 5px;
             }
         }
 
         .submit-btn {
-            padding: 8px 16px;
+            padding: 10px 24px;
             background-color: #28a745;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s;
 
             &:hover {
                 background-color: #218838;
             }
+
+            &:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    .cannot-comment {
+        padding: 15px;
+        background-color: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        margin-bottom: 20px;
+
+        p {
+            margin: 0;
+            color: #856404;
         }
     }
 
     .star {
         color: #ddd;
-        font-size: 1.5em;
+        font-size: 1.2em;
 
         &.filled {
             color: #ffc107;
         }
+
+        &.interactive {
+            cursor: pointer;
+            transition: color 0.2s;
+
+            &:hover {
+                color: #ffc107;
+            }
+        }
     }
 
     .comments-list {
+        h4 {
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            color: #666;
+
+            p {
+                margin: 0;
+            }
+        }
+
         .comment {
             margin-bottom: 15px;
             padding: 15px;
@@ -84,38 +246,92 @@
             .comment-header {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
+                align-items: flex-start;
                 margin-bottom: 10px;
+                flex-wrap: wrap;
+                gap: 10px;
 
-                strong {
-                    color: #007bff;
+                .user-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+
+                    .avatar {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        background-color: #007bff;
+                        color: white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 1.2em;
+                    }
+
+                    strong {
+                        display: block;
+                        color: #333;
+                    }
+
+                    span {
+                        font-size: 0.85em;
+                        color: #666;
+                    }
                 }
 
-                span {
-                    font-size: 0.9em;
-                    color: #666;
+                .comment-rating {
+                    .star {
+                        font-size: 1em;
+                    }
                 }
             }
 
-            .comment-rating {
-                margin-bottom: 10px;
-            }
-
-            p {
-                margin: 0;
-                line-height: 1.5;
+            .comment-text {
+                margin: 10px 0;
+                line-height: 1.6;
+                color: #444;
             }
 
             .comment-images {
                 margin-top: 10px;
 
-                img {
-                    max-width: 100px;
-                    max-height: 100px;
-                    margin-right: 10px;
-                    border-radius: 4px;
+                .images-label {
+                    display: block;
+                    font-size: 0.9em;
+                    color: #666;
+                    margin-bottom: 8px;
+
+                    svg {
+                        margin-right: 5px;
+                    }
+                }
+
+                .images-grid {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+
+                    .review-image {
+                        max-width: 80px;
+                        max-height: 80px;
+                        border-radius: 4px;
+                        object-fit: cover;
+                        cursor: pointer;
+                        transition: transform 0.2s;
+
+                        &:hover {
+                            transform: scale(1.1);
+                        }
+                    }
                 }
             }
+        }
+
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
         }
     }
 }

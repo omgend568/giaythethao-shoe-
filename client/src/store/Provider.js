@@ -42,5 +42,5 @@ export function Provider({ children }) {
         return;
     }, []);
 
-    return <Context.Provider value={{ dataUser, dataCart, getCart }}>{children}</Context.Provider>;
+    return <Context.Provider value={{ dataUser, dataCart, getCart, getAuthUser }}>{children}</Context.Provider>;
 }

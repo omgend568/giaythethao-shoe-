@@ -73,9 +73,7 @@ function ChartLine() {
     };
 
     return (
-        <div>
-            <h4>Quản Lý Doanh Thu</h4>
-
+        <div className={cx('chart-container')}>
             <div className={cx('chart')}>
                 <Pie data={data} options={options} />
             </div>

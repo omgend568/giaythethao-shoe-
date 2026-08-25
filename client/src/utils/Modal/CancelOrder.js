@@ -11,8 +11,12 @@ function ModalCancelOrder({ show, setShow, item, onSuccess }) {
         try {
             const res = await request.post('/api/cancelorder', { id: item.id });
             toast.success(res.data.message);
+            
+            // Reset selectedProduct trước khi đóng modal để tránh lỗi render
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
             setShow(false);
-            if (typeof onSuccess === 'function') onSuccess();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Lỗi khi hủy đơn');
         }
@@ -24,12 +28,17 @@ function ModalCancelOrder({ show, setShow, item, onSuccess }) {
                 <Modal.Header closeButton>
                     <Modal.Title>Hủy Đơn Hàng</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>Bạn Muốn Hủy Đơn Hàng</Modal.Body>
+                <Modal.Body>
+                    <p>Bạn Muốn Hủy Đơn Hàng #{item.id}?</p>
+                    <p className="text-muted mb-0">
+                        <small>Người nhận: {item.User?.fullname || 'N/A'}</small>
+                    </p>
+                </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
                         Đóng
                     </Button>
-                    <Button variant="primary" onClick={handleDeletePro}>
+                    <Button variant="danger" onClick={handleDeletePro}>
                         Hủy Đơn Hàng
                     </Button>
                 </Modal.Footer>

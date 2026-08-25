@@ -15,14 +15,23 @@ const cx = classNames.bind(styles);
 
 const getProductPrice = (item) => item?.ProductVariants?.[0]?.price || item?.price || 0;
 
+const BRAND_LABELS = {
+    'giay-nam': 'Giày Nam',
+    'giay-nu': 'Giày Nữ',
+    'giay-tre-em': 'Giày Trẻ Em',
+};
+
 function Category() {
     const [dataProducts, setDataProducts] = useState([]);
+    const [categoryName, setCategoryName] = useState('');
     const [checkList, setCheckList] = useState(1);
     const [sortOrder, setSortOrder] = useState('1');
     const [page, setPage] = useState(1);
 
     const location = useLocation();
     const pathName = location.pathname.slice(10);
+    const searchParams = new URLSearchParams(location.search);
+    const categoryId = searchParams.get('cat');
 
     useEffect(() => {
         if (pathName === 'giay-nam') {
@@ -35,17 +44,42 @@ function Category() {
             setCheckList(3);
         }
         setPage(1);
-    }, [pathName]);
+    }, [pathName, categoryId]);
 
     useEffect(() => {
-        request.get('/api/products').then((res) => setDataProducts(res.data));
-    }, []);
+        const fetchProducts = async () => {
+            if (categoryId) {
+                const res = await request.get('/api/products-by-category', {
+                    params: { categoryId },
+                });
+                const products = Array.isArray(res.data) ? res.data : [];
+                setDataProducts(products);
 
-    const filteredProducts = dataProducts.filter(
-        (item) =>
-            checkList === '' ||
-            (item.brandId ? Number(item.brandId) : item.Brand?.id) === Number(checkList)
-    );
+                const nameFromProduct = products[0]?.Categories?.[0]?.name;
+                if (nameFromProduct) {
+                    setCategoryName(nameFromProduct);
+                } else {
+                    const catRes = await request.get('/api/all-categories');
+                    const cat = (catRes.data || []).find((c) => String(c.id) === String(categoryId));
+                    setCategoryName(cat?.name || '');
+                }
+            } else {
+                const res = await request.get('/api/products');
+                setDataProducts(res.data);
+                setCategoryName('');
+            }
+        };
+
+        fetchProducts();
+    }, [categoryId]);
+
+    const filteredProducts = categoryId
+        ? dataProducts
+        : dataProducts.filter(
+              (item) =>
+                  checkList === '' ||
+                  (item.brandId ? Number(item.brandId) : item.Brand?.id) === Number(checkList)
+          );
 
     const sortedProducts = [...filteredProducts].sort((a, b) => {
         return sortOrder === '1'
@@ -62,9 +96,13 @@ function Category() {
         setPage(value);
     };
 
+    const pageTitle = categoryId
+        ? categoryName
+        : BRAND_LABELS[pathName] || (pathName === '' ? 'Tất Cả Sản Phẩm' : '');
+
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, [pathName, page]);
+    }, [pathName, page, categoryId]);
 
     return (
         <div className={cx('wrapper')}>
@@ -74,6 +112,11 @@ function Category() {
             </header>
 
             <main className={cx('main')}>
+                {pageTitle && (
+                    <h2 style={{ marginBottom: '16px', fontSize: '22px' }}>
+                        {categoryId ? `Danh mục: ${pageTitle}` : pageTitle}
+                    </h2>
+                )}
                 <div className={cx('filter-product')}>
                     {!(pathName === 'giay-nam' || pathName === 'giay-nu' || pathName === 'giay-tre-em') && (
                         <div>

@@ -31,8 +31,10 @@ router.post('/addproduct', ControllerJWT.verifyTokenAdmin, upload.array('fileImg
 router.get('/products', controller.GetProducts);
 router.get('/product', controller.GetOneProducts);
 router.get('/search', controller.SearchProduct);
+router.get('/products-by-category', controller.GetProductsByCategory);
 router.post('/editpro', ControllerJWT.verifyTokenAdmin, upload.array('fileImg'), controller.EditPro);
 router.delete('/deleteproduct', ControllerJWT.verifyTokenAdmin, controller.deletePro);
+router.post('/editorder', ControllerJWT.verifyTokenAdmin, controller.EditOrder);
 router.get('/similarproduct', controller.SimilarProduct);
 
 module.exports = router;

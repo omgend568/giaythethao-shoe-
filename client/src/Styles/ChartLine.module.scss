@@ -1,14 +1,27 @@
+.chart-container {
+    text-align: center;
+    
+    h4 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+    }
+}
+
 .chart {
-    width: 500px;
-    margin: 50px auto;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
 }
-canvas {
-    width: 500px;
-    height: 500px;
-}
+
 @media only screen and (max-width: 600px) {
     .chart {
         width: 100%;
-        margin: 50px auto;
     }
 }

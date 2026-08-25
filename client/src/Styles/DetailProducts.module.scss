@@ -91,10 +91,11 @@
         border: none;
         height: 40px;
         border-radius: 20px;
-        background-color: #efefef;
+        background-color: #111;
+        color: #fff;
     }
     button:hover {
-        background-color: #3a3a3a;
+        background-color: #000;
         color: #fff;
         transition: 0.4s;
     }

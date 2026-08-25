@@ -6,3 +6,21 @@
         margin: 0 5px;
     }
 }
+
+.status-active {
+    color: #198754;
+    font-weight: 600;
+    background-color: #d1e7dd;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.status-locked {
+    color: #dc3545;
+    font-weight: 600;
+    background-color: #f8d7da;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}

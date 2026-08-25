@@ -48,10 +48,10 @@ function ManageProducts({ setCheckOpenAddProduct }) {
 
     const [dataProduct, setDataProduct] = useState([]);
 
-    const productsPerPage = 6;
-    const startIndex = (page - 1) * productsPerPage;
-    const totalPages = Math.ceil(dataProduct.length / productsPerPage);
-    const currentProducts = dataProduct.slice(startIndex, startIndex + productsPerPage);
+    const rowsPerPage = 50;
+    const totalPages = Math.ceil(dataProduct.length / rowsPerPage);
+    const startIndex = (page - 1) * rowsPerPage;
+    const currentProducts = dataProduct.slice(startIndex, startIndex + rowsPerPage);
 
     const handlePageChange = (event, value) => {
         setPage(value);

@@ -30,7 +30,7 @@ const sortVariantsBySize = (variants) =>
         return String(a.size).localeCompare(String(b.size), 'vi', { numeric: true });
     });
 
-function ModalDetailProduct({ id, show, setShow }) {
+function ModalDetailProduct({ id, show, setShow, onHoverEnter, onHoverLeave }) {
     const handleClose = () => setShow(false);
     const [quantity, setQuantity] = useState(1);
     const [dataProduct, setDataProduct] = useState([]);
@@ -74,12 +74,17 @@ function ModalDetailProduct({ id, show, setShow }) {
         if (!selectedVariant) {
             return toast.error('Vui lòng chọn màu và kích cỡ sản phẩm');
         }
+        const maxStock = getMaxStock();
+        if (quantity > maxStock) {
+            return toast.error(maxStock > 0 ? `Chỉ còn ${maxStock} sản phẩm trong kho` : 'Sản phẩm đã hết hàng');
+        }
         try {
             await addToCartProduct(selectedVariant, quantity);
             await getCart();
             toast.success('Thêm vào giỏ hàng thành công');
+            handleClose();
         } catch (error) {
-            if (error.message !== 'NOT_LOGGED_IN') {
+            if (error.message !== 'NOT_LOGGED_IN' && !error.response?.data?.message) {
                 toast.error('Không thể thêm vào giỏ hàng');
             }
         }
@@ -91,11 +96,40 @@ function ModalDetailProduct({ id, show, setShow }) {
         }
     }, [quantity]);
 
+    useEffect(() => {
+        if (selectedVariant?.stock != null) {
+            const max = Number(selectedVariant.stock);
+            if (!Number.isNaN(max) && quantity > max) {
+                setQuantity(Math.max(1, max));
+            }
+        }
+    }, [selectedVariant, quantity]);
+
+    const getMaxStock = () => {
+        if (selectedVariant?.stock == null) return Infinity;
+        const max = Number(selectedVariant.stock);
+        return Number.isNaN(max) ? 0 : max;
+    };
+
+    const handleIncreaseQuantity = () => {
+        const maxStock = getMaxStock();
+        if (quantity >= maxStock) {
+            toast.error(maxStock > 0 ? `Chỉ còn ${maxStock} sản phẩm trong kho` : 'Sản phẩm đã hết hàng');
+            return;
+        }
+        setQuantity(quantity + 1);
+    };
+
     return (
         <div className={cx('wrapper')}>
             <Modal show={show} size="lg" aria-labelledby="contained-modal-title-vcenter" centered onHide={handleClose}>
                 {dataProduct.map((item) => (
-                    <Modal.Body key={item.id} className={cx('modal-body')}>
+                    <Modal.Body
+                        key={item.id}
+                        className={cx('modal-body')}
+                        onMouseEnter={onHoverEnter}
+                        onMouseLeave={onHoverLeave}
+                    >
                         <div className={cx('img')}>
                             <img src={getUploadUrl(item.ProductImages?.[0]?.url)} alt="" />
                         </div>
@@ -168,7 +202,11 @@ function ModalDetailProduct({ id, show, setShow }) {
                                             value={quantity}
                                             onChange={(e) => setQuantity(e.target.value)}
                                         />
-                                        <button type="button" onClick={() => setQuantity(quantity + 1)}>
+                                        <button
+                                            type="button"
+                                            disabled={quantity >= getMaxStock()}
+                                            onClick={handleIncreaseQuantity}
+                                        >
                                             +
                                         </button>
                                     </div>

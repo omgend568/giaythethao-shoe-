@@ -6,7 +6,8 @@ import getUploadUrl from '../utils/getUploadUrl';
 import { useStore } from '../hooks/useStore';
 import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { faStar, faImage } from '@fortawesome/free-solid-svg-icons';
+import Pagination from './Pagination';
 
 const cx = classNames.bind(styles);
 
@@ -18,49 +19,80 @@ function Comments({ productId }) {
     const [orderItemId, setOrderItemId] = useState(null);
     const [averageRating, setAverageRating] = useState(0);
     const [totalReviews, setTotalReviews] = useState(0);
+    const [distribution, setDistribution] = useState({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+    const [isLoading, setIsLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const { dataUser } = useStore();
+    const reviewsPerPage = 5;
 
     useEffect(() => {
         const fetchComments = async () => {
+            setIsLoading(true);
             try {
-                const res = await request.get('/api/reviews/product', { params: { productId } });
+                const res = await request.get('/api/reviews/product', {
+                    params: { productId, page, limit: reviewsPerPage }
+                });
                 if (res.data && res.data.reviews) {
                     const reviews = res.data.reviews;
                     setComments(reviews);
-                    const total = reviews.length;
-                    const avg = total > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / total : 0;
-                    setAverageRating(avg);
+                    const total = res.data.pagination?.total || reviews.length;
                     setTotalReviews(total);
+                    setTotalPages(res.data.pagination?.pages || 1);
+
+                    if (total > 0) {
+                        const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / total;
+                        setAverageRating(avg);
+
+                        const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+                        reviews.forEach(r => {
+                            if (dist[r.rating] !== undefined) dist[r.rating]++;
+                        });
+                        setDistribution(dist);
+                    } else {
+                        setAverageRating(0);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching comments:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         const checkCanComment = async () => {
-            if (dataUser.id) {
+            // Reset state when product changes
+            setCanComment(false);
+            setOrderItemId(null);
+
+            if (dataUser?.id) {
                 try {
-                    const res = await request.get('/api/reviews/order-item-id', { params: { userId: dataUser.id, productId } });
+                    const res = await request.get('/api/reviews/order-item-id', {
+                        params: { userId: dataUser.id, productId }
+                    });
                     if (res.data && res.data.orderItemId) {
                         setOrderItemId(res.data.orderItemId);
                         setCanComment(true);
                     }
                 } catch (error) {
-                    console.error('Error checking comment permission:', error);
+                    // Không hiển thị toast ở đây vì đây là kiểm tra "âm thầm"
+                    // Thông báo "Bạn cần mua sản phẩm" sẽ được hiển thị ở UI
+                    console.log('Không thể đánh giá sản phẩm này');
                 }
             }
         };
 
         fetchComments();
         checkCanComment();
-    }, [productId, dataUser]);
+    }, [productId, dataUser, page]);
 
-    const renderStars = (rate) => {
+    const renderStars = (rate, interactive = false) => {
         return Array.from({ length: 5 }, (_, i) => (
             <FontAwesomeIcon
                 key={i}
                 icon={faStar}
-                className={cx('star', { filled: i < rate })}
+                className={cx('star', { filled: i < rate, interactive })}
+                onClick={interactive ? () => setRating(i + 1) : undefined}
             />
         ));
     };
@@ -70,8 +102,9 @@ function Comments({ productId }) {
             toast.error('Bạn cần mua sản phẩm để đánh giá');
             return;
         }
-        if (!newComment.trim() && rating === 5) {
-            toast.error('Vui lòng nhập bình luận hoặc chọn đánh giá khác');
+        // Từ 3 sao trở xuống bắt buộc phải viết bình luận
+        if (rating <= 3 && !newComment.trim()) {
+            toast.error('Vui lòng viết bình luận khi đánh giá từ 3 sao trở xuống');
             return;
         }
         try {
@@ -86,77 +119,148 @@ function Comments({ productId }) {
             toast.success('Đánh giá và bình luận thành công');
             setNewComment('');
             setRating(5);
-            // Refresh comments
-            const res = await request.get('/api/reviews/product', { params: { productId } });
+            setCanComment(false);
+            setPage(1);
+
+            const res = await request.get('/api/reviews/product', {
+                params: { productId, page: 1, limit: reviewsPerPage }
+            });
             if (res.data && res.data.reviews) {
                 const reviews = res.data.reviews;
                 setComments(reviews);
-                const total = reviews.length;
-                const avg = total > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / total : 0;
-                setAverageRating(avg);
+                const total = res.data.pagination?.total || reviews.length;
                 setTotalReviews(total);
+                setTotalPages(res.data.pagination?.pages || 1);
             }
-            setCanComment(false); // Đã review rồi
         } catch (error) {
-            toast.error('Lỗi khi gửi đánh giá');
+            toast.error(error.response?.data?.message || 'Lỗi khi gửi đánh giá');
             console.error('Error submitting review:', error);
         }
+    };
+
+    const handlePageChange = (event, value) => {
+        setPage(value);
     };
 
     return (
         <div className={cx('comments-container')}>
             <h3>Đánh giá và bình luận</h3>
-            <div className={cx('average-rating')}>
-                <div className={cx('stars')}>
-                    {renderStars(Math.round(averageRating))}
+
+            <div className={cx('rating-summary')}>
+                <div className={cx('summary-left')}>
+                    <div className={cx('average-score')}>{averageRating.toFixed(1)}</div>
+                    <div className={cx('stars-display')}>
+                        {renderStars(Math.round(averageRating))}
+                    </div>
+                    <div className={cx('total-reviews')}>{totalReviews} đánh giá</div>
                 </div>
-                <span>{averageRating.toFixed(1)} / 5 ({totalReviews} đánh giá)</span>
+                <div className={cx('summary-right')}>
+                    {[5, 4, 3, 2, 1].map((star) => (
+                        <div key={star} className={cx('rating-row')}>
+                            <span>{star} sao</span>
+                            <div className={cx('progress-bar')}>
+                                <div
+                                    className={cx('progress-fill')}
+                                    style={{
+                                        width: totalReviews > 0 ? `${(distribution[star] / totalReviews) * 100}%` : '0%'
+                                    }}
+                                />
+                            </div>
+                            <span className={cx('count')}>{distribution[star]}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
+
             {canComment && (
                 <div className={cx('add-comment')}>
+                    <h4>Viết đánh giá của bạn</h4>
                     <div className={cx('rating-select')}>
-                        <label>Đánh giá: </label>
-                        <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
-                            <option value={1}>1 sao</option>
-                            <option value={2}>2 sao</option>
-                            <option value={3}>3 sao</option>
-                            <option value={4}>4 sao</option>
-                            <option value={5}>5 sao</option>
-                        </select>
+                        <label>Đánh giá của bạn: </label>
+                        <div className={cx('stars-interactive')}>
+                            {renderStars(rating, true)}
+                        </div>
                     </div>
                     <textarea
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Viết bình luận của bạn... (tùy chọn)"
+                        placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này... (tùy chọn)"
                         rows={4}
                     />
-                    
-                    <button onClick={handleCommentSubmit} className={cx('submit-btn')}>Gửi đánh giá</button>
+                    <button
+                        onClick={handleCommentSubmit}
+                        className={cx('submit-btn')}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Đang gửi...' : 'Gửi đánh giá'}
+                    </button>
                 </div>
             )}
+
+            {dataUser?.id && !canComment && (
+                <div className={cx('cannot-comment')}>
+                    <p>Bạn cần mua sản phẩm này để có thể đánh giá</p>
+                </div>
+            )}
+
             <div className={cx('comments-list')}>
-                {comments.length > 0 ? (
-                    comments.map((comment) => (
-                        <div key={comment.id} className={cx('comment')}>
-                            <div className={cx('comment-header')}>
-                                <strong>{comment.User?.fullname || 'Người dùng'}</strong>
-                                <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
-                            </div>
-                            <div className={cx('comment-rating')}>
-                                {renderStars(comment.rating)}
-                            </div>
-                            <p>{comment.comment}</p>
-                            {comment.ReviewImages && comment.ReviewImages.length > 0 && (
-                                <div className={cx('comment-images')}>
-                                    {comment.ReviewImages.map((img) => (
-                                        <img key={img.id} src={getUploadUrl(img.url)} alt="" />
-                                    ))}
+                <h4>Danh sách đánh giá ({totalReviews})</h4>
+                {isLoading && comments.length === 0 ? (
+                    <div className={cx('loading')}>Đang tải...</div>
+                ) : comments.length > 0 ? (
+                    <>
+                        {comments.map((comment) => (
+                            <div key={comment.id} className={cx('comment')}>
+                                <div className={cx('comment-header')}>
+                                    <div className={cx('user-info')}>
+                                        <div className={cx('avatar')}>
+                                            {comment.User?.fullname?.charAt(0)?.toUpperCase() || 'U'}
+                                        </div>
+                                        <div>
+                                            <strong>{comment.User?.fullname || 'Người dùng'}</strong>
+                                            <span>{new Date(comment.createdAt).toLocaleDateString('vi-VN')}</span>
+                                        </div>
+                                    </div>
+                                    <div className={cx('comment-rating')}>
+                                        {renderStars(comment.rating)}
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    ))
+                                {comment.comment && (
+                                    <p className={cx('comment-text')}>{comment.comment}</p>
+                                )}
+                                {comment.ReviewImages && comment.ReviewImages.length > 0 && (
+                                    <div className={cx('comment-images')}>
+                                        <span className={cx('images-label')}>
+                                            <FontAwesomeIcon icon={faImage} /> Hình ảnh:
+                                        </span>
+                                        <div className={cx('images-grid')}>
+                                            {comment.ReviewImages.map((img, index) => (
+                                                <img
+                                                    key={img.id || index}
+                                                    src={getUploadUrl(img.url)}
+                                                    alt={`Hình ảnh ${index + 1}`}
+                                                    className={cx('review-image')}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                        {totalPages > 1 && (
+                            <div className={cx('pagination-wrapper')}>
+                                <Pagination
+                                    page={page}
+                                    totalPages={totalPages}
+                                    handlePageChange={handlePageChange}
+                                />
+                            </div>
+                        )}
+                    </>
                 ) : (
-                    <p>Chưa có bình luận nào.</p>
+                    <div className={cx('no-comments')}>
+                        <p>Chưa có bình luận nào. Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                    </div>
                 )}
             </div>
         </div>

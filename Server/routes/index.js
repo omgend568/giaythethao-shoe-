@@ -2,7 +2,10 @@ const UserRoute = require('./RoutesUser');
 const CategoryRoute = require('./RoutesCategory');
 const ProductsRoute = require('./RoutesProducts');
 const CartRoute = require('./RoutesCart');
+const PaymentsRoutes = require('./RoutesPayments');
 const ReviewRoutes = require('./RoutesReview');
+const PromotionRoutes = require('./RoutesPromotion');
+const StatisticsRoutes = require('./RoutesStatistics');
 const modelUser = require('../models/ModelUser');
 const { jwtDecode } = require('jwt-decode');
 
@@ -11,7 +14,10 @@ function route(app) {
     app.use('/api', UserRoute);
     app.use('/api', CategoryRoute);
     app.use('/api', CartRoute);
+    app.use('/api', PaymentsRoutes);
     app.use('/api/reviews', ReviewRoutes);
+    app.use('/api/promotions', PromotionRoutes);
+    app.use('/api', StatisticsRoutes);
 
     app.get('/api/admin', async (req, res) => {
         try {

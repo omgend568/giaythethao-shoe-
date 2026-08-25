@@ -85,6 +85,73 @@
     }
 }
 
+.promotion-section {
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
+    h4 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+}
+
+.promo-input-group {
+    display: flex;
+    gap: 10px;
+    input {
+        flex: 1;
+    }
+    button {
+        white-space: nowrap;
+    }
+}
+
+.applied-promotion {
+    .alert {
+        margin-bottom: 0;
+    }
+}
+
+.available-promotions {
+    margin-bottom: 10px;
+}
+
+.promo-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.promo-tag {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 12px;
+    border: 1px dashed #007bff;
+    background: #f8f9fa;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+        background: #e7f1ff;
+        border-style: solid;
+    }
+    
+    .promo-code {
+        font-weight: 600;
+        font-size: 13px;
+        color: #007bff;
+    }
+    
+    .promo-discount {
+        font-size: 11px;
+        color: #28a745;
+        font-weight: 500;
+    }
+}
+
 .img-product {
     h4 {
         font-size: 20px;

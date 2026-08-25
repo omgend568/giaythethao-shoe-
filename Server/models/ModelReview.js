@@ -46,6 +46,16 @@ const Review = sequelize.define(
             type: DataTypes.TEXT,
             allowNull: true,
         },
+        is_hidden: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            comment: 'Admin ẩn bình luận này',
+        },
+        hidden_at: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            comment: 'Thời điểm bị ẩn',
+        },
         createdAt: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,

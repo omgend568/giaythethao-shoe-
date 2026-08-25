@@ -21,6 +21,10 @@ const Cart = sequelize.define(
             type: DataTypes.STRING(500), // Độ dài 500 để khách nhập địa chỉ dài thoải mái
             allowNull: true,
         },
+        promotionId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         createdAt: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,

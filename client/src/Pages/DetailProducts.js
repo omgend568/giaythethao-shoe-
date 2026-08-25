@@ -127,6 +127,8 @@ function DetailProducts() {
         setSelectImg(0);
         setSimilarProduct([]);
 
+        const defaultTitle = 'Giày Thể Thao Thời Trang';
+
         request
             .get('/api/product', {
                 params: { id },
@@ -134,9 +136,6 @@ function DetailProducts() {
             .then((res) => {
                 if (res.data && Array.isArray(res.data)) {
                     setDataProduct(res.data);
-                    if (res.data[0]?.name) {
-                        document.title = `${res.data[0].name} - Shoe Store`;
-                    }
                 } else if (res.data && typeof res.data === 'object') {
                     setDataProduct([res.data]);
                 }
@@ -145,6 +144,10 @@ function DetailProducts() {
                 console.error('Error fetching product:', error);
                 setDataProduct([]);
             });
+
+        return () => {
+            document.title = defaultTitle;
+        };
     }, [id]);
 
     useEffect(() => {
@@ -152,6 +155,30 @@ function DetailProducts() {
             setQuantity(1);
         }
     }, [quantity]);
+
+    useEffect(() => {
+        if (selectedVariant?.stock != null) {
+            const max = Number(selectedVariant.stock);
+            if (!Number.isNaN(max) && quantity > max) {
+                setQuantity(Math.max(1, max));
+            }
+        }
+    }, [selectedVariant, quantity]);
+
+    const getMaxStock = () => {
+        if (selectedVariant?.stock == null) return Infinity;
+        const max = Number(selectedVariant.stock);
+        return Number.isNaN(max) ? 0 : max;
+    };
+
+    const handleIncreaseQuantity = () => {
+        const maxStock = getMaxStock();
+        if (quantity >= maxStock) {
+            toast.error(maxStock > 0 ? `Chỉ còn ${maxStock} sản phẩm trong kho` : 'Sản phẩm đã hết hàng');
+            return;
+        }
+        setQuantity(quantity + 1);
+    };
 
     const handleImgClick = (index) => {
         setSelectImg(index);
@@ -168,11 +195,16 @@ function DetailProducts() {
                 toast.error('Vui lòng chọn màu và kích cỡ sản phẩm');
                 return;
             }
+            const maxStock = getMaxStock();
+            if (quantity > maxStock) {
+                toast.error(maxStock > 0 ? `Chỉ còn ${maxStock} sản phẩm trong kho` : 'Sản phẩm đã hết hàng');
+                return;
+            }
             const data = await addToCartProduct(selectedVariant, quantity);
             toast.success(data?.data?.message || 'Thêm vào giỏ hàng thành công');
             await getCart();
         } catch (error) {
-            if (error.message !== 'NOT_LOGGED_IN') {
+            if (error.message !== 'NOT_LOGGED_IN' && !error.response?.data?.message) {
                 toast.error('Không thể thêm vào giỏ hàng');
             }
         }
@@ -314,7 +346,11 @@ function DetailProducts() {
                                             -
                                         </button>
                                         <input id={cx('quantity')} value={quantity} readOnly />
-                                        <button type="button" onClick={() => setQuantity(quantity + 1)}>
+                                        <button
+                                            type="button"
+                                            disabled={quantity >= getMaxStock()}
+                                            onClick={handleIncreaseQuantity}
+                                        >
                                             +
                                         </button>
                                     </div>

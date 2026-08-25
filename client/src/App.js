@@ -9,6 +9,7 @@ import ProductsTab from './Components/ProductsTab';
 import Slider from './Components/Slider';
 import request from './Config/api';
 import Chatbot from './utils/Chatbot/Chatbot';
+import { ScrollProvider } from './context/ScrollContext';
 
 function App() {
     const [dataProducts, setDataProducts] = useState([]);
@@ -25,32 +26,34 @@ function App() {
     }, []);
 
     return (
-        <div className="App">
-            <ToastContainer  />
+        <ScrollProvider>
+            <div className="App">
+                <ToastContainer  />
 
-            <header>
-                <Header setLengthCart={setLengthCart} lengthCart={lengthCart} />
-            </header>
+                <header>
+                    <Header setLengthCart={setLengthCart} lengthCart={lengthCart} />
+                </header>
 
-            <main>
-                <div>
-                    <Chatbot />
-                </div>
-                <div>
-                    <Slider />
-                </div>
-                <div>
-                    <ProductsTab dataProducts={dataProducts} />
-                </div>
+                <main>
+                    <div>
+                        <Chatbot />
+                    </div>
+                    <div>
+                        <Slider />
+                    </div>
+                    <div>
+                        <ProductsTab dataProducts={dataProducts} />
+                    </div>
 
-                <div>
-                    <FeatureGrid />
-                </div>
-            </main>
-            <footer>
-                <Footer />
-            </footer>
-        </div>
+                    <div>
+                        <FeatureGrid />
+                    </div>
+                </main>
+                <footer>
+                    <Footer />
+                </footer>
+            </div>
+        </ScrollProvider>
     );
 }
 
